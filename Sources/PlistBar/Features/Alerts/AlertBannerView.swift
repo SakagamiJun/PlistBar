@@ -66,7 +66,7 @@ struct AlertBannerView: View {
     private func alertRow(_ alert: AlertItem) -> some View {
         HStack(alignment: .top, spacing: LayoutTokens.space4) {
             Circle()
-                .fill(alert.matchedRule.severity == .error ? Color.red : Color.orange)
+                .fill(alert.severity == .error ? Color.red : Color.orange)
                 .frame(width: 6, height: 6)
                 .padding(.top, 4)
 
@@ -81,7 +81,7 @@ struct AlertBannerView: View {
                         .foregroundStyle(.tertiary)
                 }
 
-                Text(alert.line)
+                Text(alert.matchedLine)
                     .font(.app(size: LayoutTokens.FontSize.caption))
                     .lineLimit(3)
                     .foregroundStyle(alert.isRead ? .tertiary : .primary)

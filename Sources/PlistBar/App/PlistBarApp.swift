@@ -16,7 +16,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         let viewModel = ServiceListViewModel()
-        statusItemController = StatusItemController(viewModel: viewModel)
+        let alertViewModel = AlertViewModel()
+        statusItemController = StatusItemController(viewModel: viewModel, alertViewModel: alertViewModel)
+
+        // Request notification permission
+        Task {
+            _ = await NotificationService.requestPermission()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

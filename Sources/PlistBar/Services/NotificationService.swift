@@ -13,6 +13,9 @@ enum NotificationService: Sendable {
     }
 
     static func send(title: String, body: String, severity: LogRule.Severity) {
+        // Info severity does not send system notifications (design.md §5.4.3)
+        guard severity != .info else { return }
+
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body

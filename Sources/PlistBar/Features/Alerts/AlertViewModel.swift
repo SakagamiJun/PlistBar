@@ -9,14 +9,19 @@ final class AlertViewModel {
     var hasUnread: Bool { unreadCount > 0 }
 
     var hasError: Bool {
-        alerts.contains { !$0.isRead && $0.matchedRule.severity == .error }
+        alerts.contains { !$0.isRead && $0.severity == .error }
+    }
+
+    var hasWarning: Bool {
+        alerts.contains { !$0.isRead && $0.severity == .warning }
     }
 
     func addAlert(from matchedRule: LogRule, line: String, jobLabel: String) {
         let alert = AlertItem(
             jobLabel: jobLabel,
-            line: line,
-            matchedRule: matchedRule
+            ruleName: matchedRule.name,
+            matchedLine: line,
+            severity: matchedRule.severity
         )
         alerts.insert(alert, at: 0)
 
@@ -25,11 +30,14 @@ final class AlertViewModel {
             alerts = Array(alerts.prefix(100))
         }
 
-        NotificationService.send(
-            title: "[\(matchedRule.severity.rawValue)] \(jobLabel)",
-            body: String(line.prefix(200)),
-            severity: matchedRule.severity
-        )
+        // Only send notifications for warning+ severity
+        if matchedRule.severity != .info {
+            NotificationService.send(
+                title: "[\(matchedRule.severity.rawValue)] \(jobLabel)",
+                body: String(line.prefix(200)),
+                severity: matchedRule.severity
+            )
+        }
     }
 
     func processLogLine(_ line: String, jobLabel: String) {

@@ -16,9 +16,11 @@ final class StatusItemController: NSObject {
     private var popoverHostingController: NSHostingController<AnyView>?
 
     let viewModel: ServiceListViewModel
+    let alertViewModel: AlertViewModel
 
-    init(viewModel: ServiceListViewModel) {
+    init(viewModel: ServiceListViewModel, alertViewModel: AlertViewModel) {
         self.viewModel = viewModel
+        self.alertViewModel = alertViewModel
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.panel = FloatingPanel(
             contentRect: NSRect(
@@ -44,6 +46,31 @@ final class StatusItemController: NSObject {
         self.unloadPopoverContent()
         self.viewModel.stopHeartbeat()
         NSStatusBar.system.removeStatusItem(self.statusItem)
+    }
+
+    /// Update menu bar icon based on alert state (design.md §3.6 / llm-prompt §3.6)
+    func updateIconForAlertState() {
+        guard let button = statusItem.button else { return }
+
+        if alertViewModel.hasError {
+            button.image = NSImage(
+                systemSymbolName: "exclamationmark.triangle.fill",
+                accessibilityDescription: "PlistBar - Error"
+            )
+            button.image?.isTemplate = false
+        } else if alertViewModel.hasWarning || alertViewModel.hasUnread {
+            button.image = NSImage(
+                systemSymbolName: "exclamationmark.triangle",
+                accessibilityDescription: "PlistBar - Warning"
+            )
+            button.image?.isTemplate = false
+        } else {
+            button.image = NSImage(
+                systemSymbolName: "list.bullet.rectangle",
+                accessibilityDescription: "PlistBar"
+            )
+            button.image?.isTemplate = true
+        }
     }
 
     @objc
@@ -93,6 +120,15 @@ final class StatusItemController: NSObject {
             let rootView = AnyView(
                 ServiceListView(viewModel: self.viewModel)
                     .frame(width: LayoutTokens.panelWidth)
+                    .background(
+                        AppMaterialSurface.regularPanel()
+                            .shadow(
+                                color: Color(nsColor: .shadowColor).opacity(LayoutTokens.Shadow.standard.opacity),
+                                radius: LayoutTokens.Shadow.standard.radius,
+                                x: LayoutTokens.Shadow.standard.x,
+                                y: LayoutTokens.Shadow.standard.y
+                            )
+                    )
             )
             let hc = NSHostingController(rootView: rootView)
             hc.sizingOptions = [.standardBounds]

@@ -1,6 +1,6 @@
 import Foundation
 
-struct LaunchPlistDraft {
+struct LaunchPlistDraft: @unchecked Sendable {
     enum ScheduleMode: String, CaseIterable, Identifiable, Sendable {
         case interval = "Interval"
         case calendar = "Calendar"

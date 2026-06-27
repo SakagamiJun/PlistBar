@@ -1,7 +1,8 @@
 import Foundation
 
 struct LogRule: Identifiable, Hashable, Codable, Sendable {
-    enum Severity: String, Codable, Sendable {
+    enum Severity: String, Codable, CaseIterable, Sendable {
+        case info = "Info"
         case warning = "Warning"
         case error = "Error"
     }
@@ -31,23 +32,26 @@ struct AlertItem: Identifiable, Hashable, Sendable {
     let id: UUID
     let timestamp: Date
     let jobLabel: String
-    let line: String
-    let matchedRule: LogRule
+    let ruleName: String
+    let matchedLine: String
+    let severity: LogRule.Severity
     var isRead: Bool
 
     init(
         id: UUID = UUID(),
         timestamp: Date = Date(),
         jobLabel: String,
-        line: String,
-        matchedRule: LogRule,
+        ruleName: String,
+        matchedLine: String,
+        severity: LogRule.Severity,
         isRead: Bool = false
     ) {
         self.id = id
         self.timestamp = timestamp
         self.jobLabel = jobLabel
-        self.line = line
-        self.matchedRule = matchedRule
+        self.ruleName = ruleName
+        self.matchedLine = matchedLine
+        self.severity = severity
         self.isRead = isRead
     }
 }

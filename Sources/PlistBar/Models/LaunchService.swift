@@ -116,6 +116,21 @@ struct LaunchService: Identifiable, Hashable, @unchecked Sendable {
     }
 }
 
+// MARK: - Convenience properties (from plistDictionary, per design.md §4.3)
+
+extension LaunchService {
+    var program: String? { plistDictionary["Program"] as? String }
+    var programArguments: [String]? { plistDictionary["ProgramArguments"] as? [String] }
+    var runAtLoad: Bool { plistDictionary["RunAtLoad"] as? Bool ?? false }
+    var keepAlive: Bool {
+        if let b = plistDictionary["KeepAlive"] as? Bool { return b }
+        if plistDictionary["KeepAlive"] is [String: Any] { return true }
+        return false
+    }
+    var standardOutPath: String? { plistDictionary["StandardOutPath"] as? String }
+    var standardErrorPath: String? { plistDictionary["StandardErrorPath"] as? String }
+}
+
 // MARK: - Convenience accessors on [String: Any]
 
 extension Dictionary where Key == String, Value == Any {
