@@ -131,7 +131,9 @@ struct PlistEditorTests {
     }
 
     @Test("CalendarEntry summary format")
+    @MainActor
     func calendarEntrySummary() {
+        LocalizationManager.shared.setLanguage(.english)
         let entry1 = LaunchPlistDraft.CalendarEntry(minute: 15, hour: 14)
         #expect(entry1.summary == "14:15")
 

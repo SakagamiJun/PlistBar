@@ -53,4 +53,48 @@ struct LocalizationTests {
         let missingKey = "non_existent_key_12345"
         #expect(l10n(missingKey) == missingKey)
     }
+
+    @Test("Model displayNames localization")
+    @MainActor
+    func modelDisplayNames() {
+        let manager = LocalizationManager.shared
+
+        manager.setLanguage(.simplifiedChinese)
+        #expect(LaunchServiceScope.userAgents.displayName == "用户 Agents")
+        #expect(LaunchServiceScope.globalAgents.displayName == "全局 Agents")
+        #expect(LaunchServiceScope.globalDaemons.displayName == "全局 Daemons (系统)")
+        #expect(LaunchRuntimeStatus.running.displayName == "运行中")
+        #expect(LaunchRuntimeStatus.loaded.displayName == "已加载")
+        #expect(LaunchRuntimeStatus.stopped.displayName == "未运行")
+        #expect(LaunchServiceKind.agent.displayName == "Agent (代理)")
+        #expect(LaunchServiceKind.daemon.displayName == "Daemon (守护进程)")
+        #expect(LogRule.Severity.error.displayName == "错误")
+        #expect(LogRule.Severity.warning.displayName == "警告")
+        #expect(LogRule.Severity.info.displayName == "信息")
+
+        manager.setLanguage(.english)
+        #expect(LaunchServiceScope.userAgents.displayName == "User Agents")
+        #expect(LaunchRuntimeStatus.running.displayName == "Running")
+        #expect(LogRule.Severity.error.displayName == "Error")
+    }
+
+    @Test("CalendarEntry summary localization")
+    @MainActor
+    func calendarEntrySummary() {
+        let manager = LocalizationManager.shared
+
+        let entry = LaunchPlistDraft.CalendarEntry(minute: 30, hour: 14, day: 15, weekday: 2, month: 10)
+
+        manager.setLanguage(.simplifiedChinese)
+        #expect(entry.summary.contains("10月"))
+        #expect(entry.summary.contains("周一"))
+        #expect(entry.summary.contains("15日"))
+        #expect(entry.summary.contains("14:30"))
+
+        manager.setLanguage(.english)
+        #expect(entry.summary.contains("Month 10"))
+        #expect(entry.summary.contains("Mon"))
+        #expect(entry.summary.contains("Day 15"))
+        #expect(entry.summary.contains("14:30"))
+    }
 }
