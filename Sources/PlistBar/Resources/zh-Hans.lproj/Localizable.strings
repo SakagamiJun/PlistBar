@@ -178,6 +178,16 @@
 "settings.section.log_rules" = "日志告警规则";
 "settings.rule_name_placeholder" = "规则名称 (如 Timeout)";
 "settings.rule_pattern_placeholder" = "正则表达式 (如 (?i)\\btimeout\\b)";
+"settings.rule_presets" = "常用预设";
+"settings.rule_match_mode" = "匹配方式";
+"settings.rule_keyword_placeholder" = "输入关键词 (如 timeout、fatal)...";
+"settings.rule_case_sensitive" = "区分大小写";
+"settings.rule_preview" = "生成规则";
+"settings.match_type.contains" = "包含";
+"settings.match_type.exact_word" = "完整词";
+"settings.match_type.prefix" = "开头";
+"settings.match_type.suffix" = "结尾";
+"settings.match_type.regex" = "正则";
 "settings.section.about" = "关于";
 "severity.error" = "错误";
 "severity.warning" = "警告";

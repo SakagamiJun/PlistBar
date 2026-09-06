@@ -178,6 +178,16 @@
 "settings.section.log_rules" = "Log Alert Rules";
 "settings.rule_name_placeholder" = "Rule Name (e.g. Timeout)";
 "settings.rule_pattern_placeholder" = "Regex Pattern (e.g. (?i)\\btimeout\\b)";
+"settings.rule_presets" = "Presets";
+"settings.rule_match_mode" = "Match Mode";
+"settings.rule_keyword_placeholder" = "Enter keyword (e.g. timeout, fatal)...";
+"settings.rule_case_sensitive" = "Case sensitive";
+"settings.rule_preview" = "Pattern";
+"settings.match_type.contains" = "Contains";
+"settings.match_type.exact_word" = "Exact Word";
+"settings.match_type.prefix" = "Starts With";
+"settings.match_type.suffix" = "Ends With";
+"settings.match_type.regex" = "Regex";
 "settings.section.about" = "About";
 "severity.error" = "Error";
 "severity.warning" = "Warning";

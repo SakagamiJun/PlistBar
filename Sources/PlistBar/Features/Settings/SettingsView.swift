@@ -10,10 +10,43 @@ struct SettingsView: View {
     @AppStorage("plistbar.notifications_enabled") private var notificationsEnabled: Bool = true
     @AppStorage("plistbar.max_log_lines") private var maxLogLines: Int = 500
 
+    enum RuleMatchType: String, CaseIterable, Identifiable {
+        case contains = "contains"
+        case exactWord = "exact_word"
+        case prefix = "prefix"
+        case suffix = "suffix"
+        case regex = "regex"
+
+        var id: String { rawValue }
+
+        @MainActor
+        var displayName: String {
+            switch self {
+            case .contains: return l10n("settings.match_type.contains")
+            case .exactWord: return l10n("settings.match_type.exact_word")
+            case .prefix: return l10n("settings.match_type.prefix")
+            case .suffix: return l10n("settings.match_type.suffix")
+            case .regex: return l10n("settings.match_type.regex")
+            }
+        }
+    }
+
+    private static let rulePresets: [(name: String, keyword: String, severity: LogRule.Severity)] = [
+        ("Crash", "crash", .error),
+        ("Timeout", "timeout", .warning),
+        ("Permission denied", "permission denied", .error),
+        ("Connection refused", "connection refused", .warning),
+        ("Out of memory", "out of memory", .error),
+        ("Failed", "failed", .warning),
+    ]
+
     @State private var localizationManager = LocalizationManager.shared
     @State private var showingAddRule = false
     @State private var newRuleName = ""
     @State private var newRulePattern = ""
+    @State private var newRuleKeyword = ""
+    @State private var newRuleMatchType: RuleMatchType = .contains
+    @State private var newRuleCaseSensitive = false
     @State private var newRuleSeverity: LogRule.Severity = .error
 
     private var isDark: Bool { colorScheme == .dark }
@@ -198,9 +231,71 @@ struct SettingsView: View {
         }
     }
 
+    private var generatedPattern: String {
+        switch newRuleMatchType {
+        case .regex:
+            return newRulePattern.trimmingCharacters(in: .whitespaces)
+        case .contains:
+            let trimmed = newRuleKeyword.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return "" }
+            let escaped = NSRegularExpression.escapedPattern(for: trimmed)
+            return newRuleCaseSensitive ? escaped : "(?i)\(escaped)"
+        case .exactWord:
+            let trimmed = newRuleKeyword.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return "" }
+            let escaped = NSRegularExpression.escapedPattern(for: trimmed)
+            return newRuleCaseSensitive ? "\\b\(escaped)\\b" : "(?i)\\b\(escaped)\\b"
+        case .prefix:
+            let trimmed = newRuleKeyword.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return "" }
+            let escaped = NSRegularExpression.escapedPattern(for: trimmed)
+            return newRuleCaseSensitive ? "^\\s*\(escaped)" : "(?i)^\\s*\(escaped)"
+        case .suffix:
+            let trimmed = newRuleKeyword.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return "" }
+            let escaped = NSRegularExpression.escapedPattern(for: trimmed)
+            return newRuleCaseSensitive ? "\(escaped)\\s*$" : "(?i)\(escaped)\\s*$"
+        }
+    }
+
+    private var isSaveDisabled: Bool {
+        let name = newRuleName.trimmingCharacters(in: .whitespaces)
+        if name.isEmpty { return true }
+        let pattern = generatedPattern
+        if pattern.isEmpty { return true }
+        return (try? Regex(pattern)) == nil
+    }
+
+    private func applyPreset(_ preset: (name: String, keyword: String, severity: LogRule.Severity)) {
+        newRuleKeyword = preset.keyword
+        if newRuleName.isEmpty {
+            newRuleName = preset.name
+        }
+        newRuleSeverity = preset.severity
+        newRuleMatchType = .contains
+    }
+
+    private func resetAddRuleForm() {
+        showingAddRule = false
+        newRuleName = ""
+        newRulePattern = ""
+        newRuleKeyword = ""
+        newRuleMatchType = .contains
+        newRuleCaseSensitive = false
+    }
+
+    private func saveNewRule() {
+        let trimmedName = newRuleName.trimmingCharacters(in: .whitespaces)
+        let pattern = generatedPattern
+        guard !trimmedName.isEmpty, !pattern.isEmpty else { return }
+        alertViewModel.addRule(name: trimmedName, pattern: pattern, severity: newRuleSeverity)
+        resetAddRuleForm()
+    }
+
     private var addRuleForm: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.space4) {
-            HStack {
+        VStack(alignment: .leading, spacing: LayoutTokens.space6) {
+            // Rule Name & Severity
+            HStack(spacing: LayoutTokens.space4) {
                 TextField(l10n("settings.rule_name_placeholder"), text: $newRuleName)
                     .textFieldStyle(.roundedBorder)
                     .font(.appCaption)
@@ -210,18 +305,85 @@ struct SettingsView: View {
                         Text(sev.displayName).tag(sev)
                     }
                 }
-                .frame(width: 80)
+                .frame(width: 85)
             }
 
-            TextField(l10n("settings.rule_pattern_placeholder"), text: $newRulePattern)
-                .textFieldStyle(.roundedBorder)
-                .font(.appCaption)
+            // Presets row
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    Text(l10n("settings.rule_presets") + ":")
+                        .font(.system(size: 9))
+                        .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
 
+                    ForEach(Self.rulePresets, id: \.name) { preset in
+                        Button {
+                            applyPreset(preset)
+                        } label: {
+                            Text(preset.name)
+                                .font(.system(size: 9))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule().fill(ColorTokens.controlFill(isDark: isDark))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            // Match type picker
+            HStack(spacing: LayoutTokens.space4) {
+                Text(l10n("settings.rule_match_mode") + ":")
+                    .font(.system(size: 10))
+                    .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
+
+                Picker("", selection: $newRuleMatchType) {
+                    ForEach(RuleMatchType.allCases) { type in
+                        Text(type.displayName).tag(type)
+                    }
+                }
+                .font(.appCaption)
+                .pickerStyle(.segmented)
+            }
+
+            // Input: Keyword or Regex
+            if newRuleMatchType == .regex {
+                TextField(l10n("settings.rule_pattern_placeholder"), text: $newRulePattern)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.appCaption)
+            } else {
+                HStack(spacing: LayoutTokens.space6) {
+                    TextField(l10n("settings.rule_keyword_placeholder"), text: $newRuleKeyword)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.appCaption)
+
+                    Toggle(isOn: $newRuleCaseSensitive) {
+                        Text(l10n("settings.rule_case_sensitive"))
+                            .font(.system(size: 9))
+                    }
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                }
+            }
+
+            // Live pattern preview
+            if !generatedPattern.isEmpty {
+                HStack(spacing: 4) {
+                    Text(l10n("settings.rule_preview") + ":")
+                        .font(.system(size: 9))
+                        .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
+                    Text(generatedPattern)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
+                        .lineLimit(1)
+                }
+            }
+
+            // Actions: Cancel & Save
             HStack {
                 Button(l10n("action.cancel")) {
-                    showingAddRule = false
-                    newRuleName = ""
-                    newRulePattern = ""
+                    resetAddRuleForm()
                 }
                 .font(.appCaption)
                 .buttonStyle(.bordered)
@@ -230,24 +392,22 @@ struct SettingsView: View {
                 Spacer()
 
                 Button(l10n("action.save_rule")) {
-                    let trimmedName = newRuleName.trimmingCharacters(in: .whitespaces)
-                    let trimmedPattern = newRulePattern.trimmingCharacters(in: .whitespaces)
-                    guard !trimmedName.isEmpty, !trimmedPattern.isEmpty else { return }
-                    alertViewModel.addRule(name: trimmedName, pattern: trimmedPattern, severity: newRuleSeverity)
-                    showingAddRule = false
-                    newRuleName = ""
-                    newRulePattern = ""
+                    saveNewRule()
                 }
                 .font(.appCaption)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.mini)
-                .disabled(newRuleName.isEmpty || newRulePattern.isEmpty)
+                .disabled(isSaveDisabled)
             }
         }
-        .padding(LayoutTokens.space4)
+        .padding(LayoutTokens.space6)
         .background(
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .fill(ColorTokens.controlFill(isDark: isDark))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(ColorTokens.controlBorder(isDark: isDark), lineWidth: LayoutTokens.stroke)
         )
     }
 
