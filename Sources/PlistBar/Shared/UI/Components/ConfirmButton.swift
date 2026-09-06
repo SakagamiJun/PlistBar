@@ -34,7 +34,7 @@ struct ConfirmButton: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                     .keyboardShortcut(.defaultAction)
-                    .tint(destructive ? .red : nil)
+                    .tint(destructive ? ColorTokens.critical : nil)
                 }
             }
             .padding(LayoutTokens.space8)

@@ -27,6 +27,20 @@ struct ModelTests {
         #expect(LaunchServiceScope.globalDaemons.kind == .daemon)
     }
 
+    @Test("LaunchServiceScope.isUserWritable permissions")
+    func scopePermissions() {
+        #expect(LaunchServiceScope.userAgents.isUserWritable == true)
+        #expect(LaunchServiceScope.globalAgents.isUserWritable == false)
+        #expect(LaunchServiceScope.globalDaemons.isUserWritable == false)
+    }
+
+    @Test("LaunchRuntimeStatus properties")
+    func runtimeStatusProperties() {
+        #expect(LaunchRuntimeStatus.running.symbolName == "circle.fill")
+        #expect(LaunchRuntimeStatus.loaded.symbolName == "smallcircle.filled.circle")
+        #expect(LaunchRuntimeStatus.stopped.symbolName == "circle")
+    }
+
     @Test("CommandResult.isSuccess logic")
     func commandResultIsSuccess() {
         let success = CommandResult(exitCode: 0, stdout: "ok", stderr: "")

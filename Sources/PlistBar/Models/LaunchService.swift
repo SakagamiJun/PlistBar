@@ -42,6 +42,11 @@ enum LaunchServiceScope: String, CaseIterable, Identifiable, Sendable {
             return .agent
         }
     }
+
+    /// Permissions: userAgents are fully manageable by current user; global services are system-protected
+    var isUserWritable: Bool {
+        self == .userAgents
+    }
 }
 
 enum LaunchServiceKind: String, CaseIterable, Identifiable, Sendable {
@@ -64,6 +69,22 @@ enum LaunchRuntimeStatus: String, CaseIterable, Identifiable, Sendable {
 
     var displayName: LocalizedStringKey {
         LocalizedStringKey(rawValue)
+    }
+
+    var color: Color {
+        switch self {
+        case .running: return .nativePositive
+        case .loaded: return .nativeWarning
+        case .stopped: return Color(nsColor: .tertiaryLabelColor)
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .running: return "circle.fill"
+        case .loaded: return "smallcircle.filled.circle"
+        case .stopped: return "circle"
+        }
     }
 }
 
