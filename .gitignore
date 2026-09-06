@@ -29,3 +29,7 @@ Package.resolved
 # CocoaPods
 Pods/
 *.xcworkspace
+
+# Documentation & Agent instructions
+docs/
+AGENTS.md
