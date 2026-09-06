@@ -44,6 +44,7 @@
 "list.tooltip_alerts" = "查看告警";
 "list.tooltip_settings" = "设置";
 "list.tooltip_refresh" = "刷新所有服务";
+"list.tooltip_quit" = "退出 PlistBar";
 "list.tooltip_start" = "启动服务";
 "list.tooltip_stop" = "停止服务";
 "list.status_tag_disabled" = "已禁用";

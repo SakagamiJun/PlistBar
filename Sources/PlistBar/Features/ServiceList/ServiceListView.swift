@@ -287,6 +287,17 @@ struct ServiceListView: View {
             }
             .buttonStyle(.plain)
             .help(l10n("list.tooltip_refresh"))
+
+            // Quit PlistBar icon
+            Button {
+                NSApplication.shared.terminate(nil)
+            } label: {
+                Image(systemName: "power")
+                    .font(.appBody)
+                    .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
+            }
+            .buttonStyle(.plain)
+            .help(l10n("list.tooltip_quit"))
         }
         .menuRowPadding()
     }

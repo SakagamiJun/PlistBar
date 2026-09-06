@@ -44,6 +44,7 @@
 "list.tooltip_alerts" = "View alerts";
 "list.tooltip_settings" = "Settings";
 "list.tooltip_refresh" = "Refresh all services";
+"list.tooltip_quit" = "Quit PlistBar";
 "list.tooltip_start" = "Start service";
 "list.tooltip_stop" = "Stop service";
 "list.status_tag_disabled" = "disabled";

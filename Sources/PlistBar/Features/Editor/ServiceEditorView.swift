@@ -329,6 +329,8 @@ struct ServiceEditorView: View {
             Text(label)
                 .font(.appBody)
         }
+        .toggleStyle(.switch)
+        .controlSize(.small)
     }
 
     private func refreshRawXML() {

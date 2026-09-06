@@ -96,6 +96,8 @@ struct SettingsView: View {
                     settingsSection(l10n("settings.section.notifications")) {
                         Toggle(l10n("settings.show_notifications"), isOn: $notificationsEnabled)
                             .font(.appBody)
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
                             .onChange(of: notificationsEnabled) { _, enabled in
                                 if enabled {
                                     Task { _ = await NotificationService.requestPermission() }
@@ -120,6 +122,8 @@ struct SettingsView: View {
                                             .font(.appCaption)
                                             .fontWeight(.medium)
                                     }
+                                    .toggleStyle(.switch)
+                                    .controlSize(.mini)
 
                                     Spacer()
 
