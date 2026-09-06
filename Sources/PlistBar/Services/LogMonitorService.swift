@@ -1,7 +1,12 @@
 import Foundation
 
 actor LogMonitorService {
-    private var monitors: [String: DispatchSourceFileSystemObject] = [:]
+    private struct ActiveMonitor {
+        let source: DispatchSourceFileSystemObject
+        let path: String
+    }
+
+    private var monitors: [String: [ActiveMonitor]] = [:]
     private var offsets: [String: UInt64] = [:]
 
     func startMonitoring(
@@ -10,62 +15,80 @@ actor LogMonitorService {
     ) {
         stopMonitoring(label: service.label)
 
-        guard let path = service.plistDictionary.standardOutPath else { return }
-        let expanded = NSString(string: path).expandingTildeInPath
-
-        guard FileManager.default.fileExists(atPath: expanded) else { return }
-
-        let fd = open(expanded, O_EVTONLY)
-        guard fd >= 0 else { return }
-
-        let source = DispatchSource.makeFileSystemObjectSource(
-            fileDescriptor: fd,
-            eventMask: [.write, .extend, .rename],
-            queue: DispatchQueue.global(qos: .background)
-        )
-
-        var currentOffset: UInt64 = 0
-        if let attrs = try? FileManager.default.attributesOfItem(atPath: expanded),
-           let size = attrs[.size] as? UInt64 {
-            currentOffset = size
+        var pathsToMonitor: [String] = []
+        if let outPath = service.plistDictionary.standardOutPath {
+            pathsToMonitor.append(outPath)
         }
-        offsets[service.label] = currentOffset
+        if let errPath = service.plistDictionary.standardErrorPath,
+           errPath != service.plistDictionary.standardOutPath {
+            pathsToMonitor.append(errPath)
+        }
 
-        let label = service.label
-        source.setEventHandler { [weak self] in
-            guard let self else { return }
-            Task {
-                let newContent = await self.readNewContent(path: expanded, label: label)
-                if !newContent.isEmpty {
-                    onNewContent(newContent)
+        var serviceMonitors: [ActiveMonitor] = []
+
+        for rawPath in pathsToMonitor {
+            let expanded = NSString(string: rawPath).expandingTildeInPath
+            guard FileManager.default.fileExists(atPath: expanded) else { continue }
+
+            let fd = open(expanded, O_EVTONLY)
+            guard fd >= 0 else { continue }
+
+            let source = DispatchSource.makeFileSystemObjectSource(
+                fileDescriptor: fd,
+                eventMask: [.write, .extend, .rename],
+                queue: DispatchQueue.global(qos: .background)
+            )
+
+            var currentOffset: UInt64 = 0
+            if let attrs = try? FileManager.default.attributesOfItem(atPath: expanded),
+               let size = attrs[.size] as? UInt64 {
+                currentOffset = size
+            }
+            offsets[expanded] = currentOffset
+
+            source.setEventHandler { [weak self] in
+                guard let self else { return }
+                Task {
+                    let newContent = await self.readNewContent(path: expanded)
+                    if !newContent.isEmpty {
+                        onNewContent(newContent)
+                    }
                 }
             }
+
+            source.setCancelHandler {
+                close(fd)
+            }
+
+            source.resume()
+            serviceMonitors.append(ActiveMonitor(source: source, path: expanded))
         }
 
-        source.setCancelHandler {
-            close(fd)
+        if !serviceMonitors.isEmpty {
+            monitors[service.label] = serviceMonitors
         }
-
-        source.resume()
-        monitors[service.label] = source
     }
 
     func stopMonitoring(label: String) {
-        monitors[label]?.cancel()
-        monitors.removeValue(forKey: label)
-        offsets.removeValue(forKey: label)
+        guard let list = monitors.removeValue(forKey: label) else { return }
+        for item in list {
+            item.source.cancel()
+            offsets.removeValue(forKey: item.path)
+        }
     }
 
     func stopAll() {
-        for (_, source) in monitors {
-            source.cancel()
+        for (_, list) in monitors {
+            for item in list {
+                item.source.cancel()
+            }
         }
         monitors.removeAll()
         offsets.removeAll()
     }
 
-    private func readNewContent(path: String, label: String) -> String {
-        let currentOffset = offsets[label] ?? 0
+    private func readNewContent(path: String) -> String {
+        let currentOffset = offsets[path] ?? 0
         guard let handle = FileHandle(forReadingAtPath: path) else { return "" }
         defer { try? handle.close() }
 
@@ -74,7 +97,6 @@ actor LogMonitorService {
 
         let seekPos: UInt64
         if fileSize < currentOffset {
-            // File was truncated or rotated
             seekPos = 0
         } else {
             seekPos = currentOffset
@@ -84,7 +106,7 @@ actor LogMonitorService {
         // Bound incremental read to 64KB to prevent sudden memory spikes
         let maxChunk = 65536
         let data = handle.readData(ofLength: maxChunk)
-        offsets[label] = seekPos + UInt64(data.count)
+        offsets[path] = seekPos + UInt64(data.count)
         return String(data: data, encoding: .utf8) ?? ""
     }
 }

@@ -38,6 +38,10 @@ final class StatusItemController: NSObject {
         self.configureStatusItem()
         self.observeScreenParameterChanges()
         self.refreshPopoverMaximumHeight()
+
+        self.alertViewModel.onAlertStateChanged = { [weak self] in
+            self?.updateIconForAlertState()
+        }
     }
 
     func shutdown() {
