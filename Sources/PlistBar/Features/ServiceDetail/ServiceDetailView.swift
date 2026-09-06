@@ -40,7 +40,7 @@ struct ServiceDetailView: View {
                 Button(action: onBack) {
                     HStack(spacing: 2) {
                         Image(systemName: "chevron.left")
-                        Text("Back")
+                        Text(l10n("action.back"))
                     }
                     .font(.appCaption)
                 }
@@ -56,21 +56,21 @@ struct ServiceDetailView: View {
                         .font(.appCaption)
                 }
                 .buttonStyle(.plain)
-                .help("Reveal plist in Finder")
+                .help(l10n("detail.tooltip_reveal"))
 
                 if service.scope.isUserWritable {
-                    Button("Edit Plist") { onEdit() }
+                    Button(l10n("action.edit")) { onEdit() }
                         .font(.appCaption)
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                 } else {
-                    Text("Read-Only")
+                    Text(l10n("detail.read_only"))
                         .font(.system(size: 9, weight: .semibold))
                         .padding(.horizontal, 4)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(ColorTokens.controlFill(isDark: isDark)))
                         .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
-                        .help("Global services are system-protected.")
+                        .help(l10n("detail.read_only_tooltip"))
                 }
             }
 
@@ -88,14 +88,14 @@ struct ServiceDetailView: View {
 
             // Info Badges Row
             HStack(spacing: LayoutTokens.space8) {
-                infoBadge("Scope", service.scope.rawValue)
-                infoBadge("Status", service.runtimeStatus.rawValue)
+                infoBadge(l10n("detail.badge.scope"), service.scope.displayName)
+                infoBadge(l10n("detail.badge.status"), service.runtimeStatus.displayName)
                 if let pid = service.pid {
-                    infoBadge("PID", "\(pid)")
+                    infoBadge(l10n("detail.badge.pid"), "\(pid)")
                 }
-                infoBadge("Enabled", service.enabled ? "Yes" : "No")
-                infoBadge("RunAtLoad", service.runAtLoad ? "Yes" : "No")
-                infoBadge("KeepAlive", service.keepAlive ? "Yes" : "No")
+                infoBadge(l10n("detail.badge.enabled"), service.enabled ? l10n("common.yes") : l10n("common.no"))
+                infoBadge(l10n("detail.badge.run_at_load"), service.runAtLoad ? l10n("common.yes") : l10n("common.no"))
+                infoBadge(l10n("detail.badge.keep_alive"), service.keepAlive ? l10n("common.yes") : l10n("common.no"))
             }
         }
         .menuRowPadding()
@@ -108,54 +108,54 @@ struct ServiceDetailView: View {
             switch service.runtimeStatus {
             case .running:
                 ConfirmButton(
-                    title: "Stop",
-                    message: "Stop \(service.label)?",
+                    title: l10n("detail.confirm_stop_title"),
+                    message: l10n("detail.confirm_stop_msg", service.label),
                     destructive: true
                 ) {
-                    viewModel.runAction(LaunchctlService.stop, label: "Stopping")
+                    viewModel.runAction(LaunchctlService.stop, label: l10n("status.stopping"))
                 }
 
             case .loaded, .stopped:
-                Button("Start") {
-                    viewModel.runAction(LaunchctlService.start, label: "Starting")
+                Button(l10n("action.start")) {
+                    viewModel.runAction(LaunchctlService.start, label: l10n("status.starting"))
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
             }
 
             if service.enabled {
-                Button("Disable") {
-                    viewModel.runAction(LaunchctlService.disable, label: "Disabling")
+                Button(l10n("action.disable")) {
+                    viewModel.runAction(LaunchctlService.disable, label: l10n("status.disabling"))
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
             } else {
-                Button("Enable") {
-                    viewModel.runAction(LaunchctlService.enable, label: "Enabling")
+                Button(l10n("action.enable")) {
+                    viewModel.runAction(LaunchctlService.enable, label: l10n("status.enabling"))
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
             }
 
-            Button("Load") {
-                viewModel.runAction(LaunchctlService.load, label: "Loading")
+            Button(l10n("action.load")) {
+                viewModel.runAction(LaunchctlService.load, label: l10n("status.loading"))
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
 
-            Button("Unload") {
-                viewModel.runAction(LaunchctlService.unload, label: "Unloading")
+            Button(l10n("action.unload")) {
+                viewModel.runAction(LaunchctlService.unload, label: l10n("status.unloading"))
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
 
             if service.scope.isUserWritable {
                 ConfirmButton(
-                    title: "Delete",
-                    message: "Permanently delete plist for \(service.label)?",
+                    title: l10n("detail.confirm_delete_title"),
+                    message: l10n("detail.confirm_delete_msg", service.label),
                     destructive: true
                 ) {
-                    viewModel.runAction(LaunchctlService.deleteUserAgent, label: "Deleting")
+                    viewModel.runAction(LaunchctlService.deleteUserAgent, label: l10n("status.deleting"))
                     onBack()
                 }
             }

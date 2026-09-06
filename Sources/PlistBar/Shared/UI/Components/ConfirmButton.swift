@@ -20,14 +20,14 @@ struct ConfirmButton: View {
                     .font(.appBody)
 
                 HStack {
-                    Button("Cancel") {
+                    Button(l10n("action.cancel")) {
                         showConfirm = false
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                     .keyboardShortcut(.cancelAction)
 
-                    Button("Confirm") {
+                    Button(l10n("action.confirm")) {
                         showConfirm = false
                         action()
                     }

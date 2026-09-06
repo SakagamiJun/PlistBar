@@ -25,7 +25,7 @@ struct LogViewerView: View {
                 VStack(spacing: LayoutTokens.space6) {
                     ProgressView()
                         .controlSize(.small)
-                    Text("Loading log window (64KB tail)...")
+                    Text(l10n("logs.loading"))
                         .font(.appCaption)
                         .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
                 }
@@ -51,7 +51,7 @@ struct LogViewerView: View {
                 Button {
                     viewModel.selectedTab = tab
                 } label: {
-                    Text(tab.rawValue)
+                    Text(tab.displayName)
                         .font(.appCaption)
                         .fontWeight(viewModel.selectedTab == tab ? .semibold : .regular)
                         .padding(.horizontal, LayoutTokens.space6)
@@ -86,7 +86,7 @@ struct LogViewerView: View {
                     .font(.appCaption)
             }
             .buttonStyle(.plain)
-            .help("Copy current log to clipboard")
+            .help(l10n("logs.tooltip_copy"))
 
             // Refresh logs button
             Button {
@@ -98,7 +98,7 @@ struct LogViewerView: View {
                     .font(.appCaption)
             }
             .buttonStyle(.plain)
-            .help("Reload log window")
+            .help(l10n("logs.tooltip_reload"))
         }
         .menuRowPadding(vertical: LayoutTokens.space4)
     }
@@ -111,7 +111,7 @@ struct LogViewerView: View {
                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                 .font(.appCaption)
 
-            TextField("Filter log lines...", text: $viewModel.searchText)
+            TextField(l10n("logs.search_placeholder"), text: $viewModel.searchText)
                 .textFieldStyle(.plain)
                 .font(.appBody)
 
@@ -166,7 +166,7 @@ struct LogViewerView: View {
             Image(systemName: "doc.text")
                 .font(.appTitle)
                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
-            Text("No log output")
+            Text(l10n("logs.empty"))
                 .font(.appBody)
                 .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
         }

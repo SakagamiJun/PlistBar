@@ -19,38 +19,38 @@ struct TemplatePicker: View {
     private var templates: [TemplateItem] {
         [
             TemplateItem(
-                name: "Basic Agent",
-                description: "Daemon-style agent, runs on login",
+                name: l10n("template.basic_agent.name"),
+                description: l10n("template.basic_agent.desc"),
                 icon: "play.circle.fill",
-                tag: "Agent",
+                tag: l10n("template.basic_agent.tag"),
                 make: { .basicAgent(label: "com.user.myagent") }
             ),
             TemplateItem(
-                name: "Interval Task",
-                description: "Runs periodically (e.g. every 1 hour)",
+                name: l10n("template.interval_task.name"),
+                description: l10n("template.interval_task.desc"),
                 icon: "clock.fill",
-                tag: "Interval",
+                tag: l10n("template.interval_task.tag"),
                 make: { .intervalTask(label: "com.user.intervaljob") }
             ),
             TemplateItem(
-                name: "Calendar Task",
-                description: "Runs at specific times like cron",
+                name: l10n("template.calendar_task.name"),
+                description: l10n("template.calendar_task.desc"),
                 icon: "calendar",
-                tag: "Calendar",
+                tag: l10n("template.calendar_task.tag"),
                 make: { .calendarTask(label: "com.user.cronjob") }
             ),
             TemplateItem(
-                name: "Directory Watcher",
-                description: "Runs whenever files in a path change",
+                name: l10n("template.watch_task.name"),
+                description: l10n("template.watch_task.desc"),
                 icon: "eye.fill",
-                tag: "Watch",
+                tag: l10n("template.watch_task.tag"),
                 make: { .watchPathTask(label: "com.user.filewatcher") }
             ),
             TemplateItem(
-                name: "Blank Plist",
-                description: "Empty draft, customize all properties",
+                name: l10n("template.blank.name"),
+                description: l10n("template.blank.desc"),
                 icon: "doc.fill",
-                tag: "Custom",
+                tag: l10n("template.blank.tag"),
                 make: { .blank() }
             ),
         ]
@@ -60,13 +60,13 @@ struct TemplatePicker: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("New Launch Agent")
+                Text(l10n("template.title"))
                     .font(.appSubhead)
                     .fontWeight(.semibold)
 
                 Spacer()
 
-                Button("Cancel") { onCancel() }
+                Button(l10n("action.cancel")) { onCancel() }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
@@ -76,7 +76,7 @@ struct TemplatePicker: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: LayoutTokens.space6) {
-                    Text("Select a starter template:")
+                    Text(l10n("template.subtitle"))
                         .font(.appCaption)
                         .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
                         .padding(.top, LayoutTokens.space2)
@@ -90,7 +90,7 @@ struct TemplatePicker: View {
                     HStack(spacing: 4) {
                         Image(systemName: "info.circle")
                             .font(.system(size: 10))
-                        Text("New services are safely created in ~/Library/LaunchAgents")
+                        Text(l10n("template.safe_notice"))
                             .font(.system(size: 10))
                     }
                     .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))

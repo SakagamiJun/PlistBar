@@ -44,15 +44,15 @@ struct ServiceEditorView: View {
 
     private var toolbar: some View {
         HStack {
-            Text("Edit Plist")
+            Text(l10n("editor.title"))
                 .font(.appSubhead)
                 .fontWeight(.semibold)
 
             Spacer()
 
             Picker("", selection: $viewModel.isRawXMLMode) {
-                Text("Form").tag(false)
-                Text("XML").tag(true)
+                Text(l10n("editor.mode_form")).tag(false)
+                Text(l10n("editor.mode_xml")).tag(true)
             }
             .pickerStyle(.segmented)
             .frame(width: 110)
@@ -64,11 +64,11 @@ struct ServiceEditorView: View {
                 }
             }
 
-            Button("Cancel") { onCancel() }
+            Button(l10n("action.cancel")) { onCancel() }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
-            Button("Save") {
+            Button(l10n("action.save")) {
                 if viewModel.isRawXMLMode {
                     applyRawXMLToDraft()
                 }
@@ -86,32 +86,32 @@ struct ServiceEditorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: LayoutTokens.space8) {
                 // Basic section
-                section("Identity & Executable") {
-                    fieldRow("Label", text: $viewModel.draft.label, placeholder: "com.user.task")
-                    fieldRow("Program", text: $viewModel.draft.program, placeholder: "/usr/local/bin/mycmd")
-                    multilineFieldRow("Arguments (one per line)", text: $viewModel.draft.programArgumentsText)
+                section(l10n("editor.section.identity")) {
+                    fieldRow(l10n("editor.field.label"), text: $viewModel.draft.label, placeholder: "com.user.task")
+                    fieldRow(l10n("editor.field.program"), text: $viewModel.draft.program, placeholder: "/usr/local/bin/mycmd")
+                    multilineFieldRow(l10n("editor.field.arguments"), text: $viewModel.draft.programArgumentsText)
                 }
 
                 // Behavior section
-                section("Process Behavior") {
-                    toggleRow("Run At Load", isOn: Binding(
+                section(l10n("editor.section.behavior")) {
+                    toggleRow(l10n("editor.field.run_at_load"), isOn: Binding(
                         get: { viewModel.draft.runAtLoad },
                         set: { viewModel.draft.runAtLoad = $0 }
                     ))
-                    toggleRow("Keep Alive", isOn: Binding(
+                    toggleRow(l10n("editor.field.keep_alive"), isOn: Binding(
                         get: { viewModel.draft.keepAlive },
                         set: { viewModel.draft.keepAlive = $0 }
                     ))
                 }
 
                 // Schedule section
-                section("Scheduling") {
-                    toggleRow("Enable Schedule", isOn: $viewModel.draft.hasSchedule)
+                section(l10n("editor.section.scheduling")) {
+                    toggleRow(l10n("editor.field.enable_schedule"), isOn: $viewModel.draft.hasSchedule)
 
                     if viewModel.draft.hasSchedule {
-                        Picker("Mode", selection: $viewModel.draft.scheduleMode) {
+                        Picker(l10n("editor.field.mode"), selection: $viewModel.draft.scheduleMode) {
                             ForEach(LaunchPlistDraft.ScheduleMode.allCases) { mode in
-                                Text(mode.rawValue).tag(mode)
+                                Text(mode.displayName).tag(mode)
                             }
                         }
                         .pickerStyle(.segmented)
@@ -127,16 +127,16 @@ struct ServiceEditorView: View {
                 }
 
                 // Paths section
-                section("Standard Paths") {
-                    fieldRow("Working Dir", text: $viewModel.draft.workingDirectory, placeholder: "~/projects")
-                    fieldRow("stdout", text: $viewModel.draft.standardOutPath, placeholder: "/tmp/myjob.stdout.log")
-                    fieldRow("stderr", text: $viewModel.draft.standardErrorPath, placeholder: "/tmp/myjob.stderr.log")
+                section(l10n("editor.section.paths")) {
+                    fieldRow(l10n("editor.field.working_dir"), text: $viewModel.draft.workingDirectory, placeholder: "~/projects")
+                    fieldRow(l10n("editor.field.stdout"), text: $viewModel.draft.standardOutPath, placeholder: "/tmp/myjob.stdout.log")
+                    fieldRow(l10n("editor.field.stderr"), text: $viewModel.draft.standardErrorPath, placeholder: "/tmp/myjob.stderr.log")
                 }
 
                 // Environment & Watch section
-                section("Advanced (Optional)") {
-                    multilineFieldRow("Environment (KEY=VAL)", text: $viewModel.draft.environmentVariablesText)
-                    multilineFieldRow("Watch Paths (one per line)", text: $viewModel.draft.watchPathsText)
+                section(l10n("editor.section.advanced")) {
+                    multilineFieldRow(l10n("editor.field.environment"), text: $viewModel.draft.environmentVariablesText)
+                    multilineFieldRow(l10n("editor.field.watch_paths"), text: $viewModel.draft.watchPathsText)
                 }
             }
             .padding(LayoutTokens.space8)
@@ -148,7 +148,7 @@ struct ServiceEditorView: View {
     private var intervalEditor: some View {
         VStack(alignment: .leading, spacing: LayoutTokens.space4) {
             HStack {
-                Text("Interval (seconds)")
+                Text(l10n("editor.field.interval_seconds"))
                     .font(.appCaption)
                 Spacer()
                 TextField("", value: Binding(
@@ -162,7 +162,7 @@ struct ServiceEditorView: View {
 
             // Quick presets
             HStack(spacing: LayoutTokens.space4) {
-                Text("Presets:")
+                Text(l10n("editor.presets"))
                     .font(.system(size: 9))
                     .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                 ForEach([(60, "1m"), (300, "5m"), (900, "15m"), (1800, "30m"), (3600, "1h"), (86400, "1d")], id: \.0) { sec, label in
@@ -192,7 +192,7 @@ struct ServiceEditorView: View {
             } label: {
                 HStack(spacing: 2) {
                     Image(systemName: "plus.circle")
-                    Text("Add Entry")
+                    Text(l10n("editor.btn_add_entry"))
                 }
                 .font(.appCaption)
             }
@@ -206,7 +206,7 @@ struct ServiceEditorView: View {
         let entry = viewModel.draft.calendarEntries[index]
         return VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text("Entry \(index + 1): \(entry.summary)")
+                Text(l10n("editor.calendar_entry_title", index + 1, entry.summary))
                     .font(.appCaption)
                     .fontWeight(.medium)
                 Spacer()
@@ -222,28 +222,28 @@ struct ServiceEditorView: View {
 
             HStack(spacing: LayoutTokens.space4) {
                 timeInputField(
-                    label: "Hour",
+                    label: l10n("editor.calendar.hour"),
                     value: Binding(
                         get: { viewModel.draft.calendarEntries[index].hour ?? 0 },
                         set: { viewModel.draft.calendarEntries[index].hour = min(23, max(0, $0)) }
                     )
                 )
                 timeInputField(
-                    label: "Min",
+                    label: l10n("editor.calendar.minute"),
                     value: Binding(
                         get: { viewModel.draft.calendarEntries[index].minute ?? 0 },
                         set: { viewModel.draft.calendarEntries[index].minute = min(59, max(0, $0)) }
                     )
                 )
                 timeInputField(
-                    label: "Day",
+                    label: l10n("editor.calendar.day"),
                     value: Binding(
                         get: { viewModel.draft.calendarEntries[index].day ?? 1 },
                         set: { viewModel.draft.calendarEntries[index].day = min(31, max(1, $0)) }
                     )
                 )
                 timeInputField(
-                    label: "Wkday",
+                    label: l10n("editor.calendar.weekday"),
                     value: Binding(
                         get: { viewModel.draft.calendarEntries[index].weekday ?? 1 },
                         set: { viewModel.draft.calendarEntries[index].weekday = min(7, max(1, $0)) }
@@ -347,7 +347,7 @@ struct ServiceEditorView: View {
             viewModel.draft = LaunchPlistDraft.from(dictionary: dict)
             viewModel.errorMessage = nil
         } catch {
-            viewModel.errorMessage = "Invalid XML: \(error.localizedDescription)"
+            viewModel.errorMessage = l10n("editor.error.invalid_xml", error.localizedDescription)
         }
     }
 }

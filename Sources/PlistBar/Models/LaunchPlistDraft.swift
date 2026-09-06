@@ -6,6 +6,14 @@ struct LaunchPlistDraft: @unchecked Sendable {
         case calendar = "Calendar"
 
         var id: String { rawValue }
+
+        @MainActor
+        var displayName: String {
+            switch self {
+            case .interval: return l10n("editor.mode.interval")
+            case .calendar: return l10n("editor.mode.calendar")
+            }
+        }
     }
 
     struct CalendarEntry: Identifiable, Hashable, Sendable {
@@ -51,14 +59,28 @@ struct LaunchPlistDraft: @unchecked Sendable {
             return dict
         }
 
+        @MainActor
         var summary: String {
             var parts: [String] = []
-            if let m = month { parts.append("Month \(m)") }
+            if let m = month { parts.append(l10n("calendar.month", m)) }
             if let w = weekday {
-                let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-                if w >= 1 && w <= 7 { parts.append(dayNames[w]) } else { parts.append("Weekday \(w)") }
+                let dayKeys = [
+                    "",
+                    "calendar.weekday.sun",
+                    "calendar.weekday.mon",
+                    "calendar.weekday.tue",
+                    "calendar.weekday.wed",
+                    "calendar.weekday.thu",
+                    "calendar.weekday.fri",
+                    "calendar.weekday.sat"
+                ]
+                if w >= 1 && w <= 7 {
+                    parts.append(l10n(dayKeys[w]))
+                } else {
+                    parts.append("\(w)")
+                }
             }
-            if let d = day { parts.append("Day \(d)") }
+            if let d = day { parts.append(l10n("calendar.day", d)) }
             let hStr = hour != nil ? String(format: "%02d", hour!) : "*"
             let mStr = minute != nil ? String(format: "%02d", minute!) : "*"
             parts.append("\(hStr):\(mStr)")

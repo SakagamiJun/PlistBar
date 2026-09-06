@@ -50,7 +50,7 @@ final class EditorViewModel {
         }
 
         guard !rawName.isEmpty else {
-            let error = CommandError.executionFailed("Label is required to name the plist file.")
+            let error = CommandError.executionFailed(l10n("editor.error.label_required"))
             errorMessage = error.localizedDescription
             throw error
         }

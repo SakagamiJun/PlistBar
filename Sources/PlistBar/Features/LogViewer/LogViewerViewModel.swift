@@ -15,6 +15,15 @@ final class LogViewerViewModel {
         case unified = "unified"
 
         var id: String { rawValue }
+
+        @MainActor
+        var displayName: String {
+            switch self {
+            case .stdout: return l10n("logs.tab.stdout")
+            case .stderr: return l10n("logs.tab.stderr")
+            case .unified: return l10n("logs.tab.unified")
+            }
+        }
     }
 
     func loadLogs(for service: LaunchService) {
