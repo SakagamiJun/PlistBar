@@ -46,16 +46,22 @@ final class ServiceListViewModel {
         Task.detached { [weak self] in
             guard let self else { return }
             let currentServices = await self.services
+            let domains = Set(currentServices.map { $0.scope.launchDomain })
+            var disabledMap: [String: Set<String>] = [:]
+            for domain in domains {
+                disabledMap[domain] = LaunchctlService.disabledLabels(for: domain)
+            }
+
             var updated: [LaunchService] = []
             for service in currentServices {
                 let (status, pid) = LaunchctlService.runtimeStatus(label: service.label, scope: service.scope)
-                let enabled = LaunchctlService.isEnabled(label: service.label, scope: service.scope)
+                let isDisabled = disabledMap[service.scope.launchDomain]?.contains(service.label) ?? false
                 updated.append(LaunchService(
                     plistURL: service.plistURL,
                     scope: service.scope,
                     label: service.label,
                     kind: service.kind,
-                    enabled: enabled,
+                    enabled: !isDisabled,
                     runtimeStatus: status,
                     pid: pid,
                     plistDictionary: service.plistDictionary

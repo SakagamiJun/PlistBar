@@ -63,20 +63,33 @@ enum LaunchctlService: Sendable {
         return (.loaded, nil)
     }
 
-    static func isEnabled(label: String, scope: LaunchServiceScope) -> Bool {
-        let domain = scope.launchDomain
+    static func disabledLabels(for domain: String) -> Set<String> {
         guard let result = try? CommandRunner.run("/bin/launchctl", arguments: ["print-disabled", domain]), result.isSuccess else {
-            return true
+            return []
         }
 
-        let output = result.stdout
-        if output.contains("\"\(label)\" => true") || output.contains("\(label) => true") {
-            return false
+        var disabled = Set<String>()
+        let lines = result.stdout.split(separator: "\n")
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.contains("=> true") || trimmed.contains("=> disabled") else { continue }
+            if let firstQuote = trimmed.firstIndex(of: "\""),
+               let secondQuote = trimmed[trimmed.index(after: firstQuote)...].firstIndex(of: "\"") {
+                let label = String(trimmed[trimmed.index(after: firstQuote)..<secondQuote])
+                disabled.insert(label)
+            } else if let arrow = trimmed.range(of: "=>") {
+                let label = String(trimmed[..<arrow.lowerBound]).trimmingCharacters(in: .whitespaces)
+                if !label.isEmpty {
+                    disabled.insert(label)
+                }
+            }
         }
-        if output.contains("\"\(label)\" => disabled") || output.contains("\(label) => disabled") {
-            return false
-        }
-        return true
+        return disabled
+    }
+
+    static func isEnabled(label: String, scope: LaunchServiceScope) -> Bool {
+        let disabled = disabledLabels(for: scope.launchDomain)
+        return !disabled.contains(label)
     }
 
     static func load(service: LaunchService) throws {
@@ -230,25 +243,23 @@ enum LaunchctlService: Sendable {
 
         if let outPath = service.plistDictionary.standardOutPath {
             let expanded = NSString(string: outPath).expandingTildeInPath
-            if FileManager.default.fileExists(atPath: expanded),
-               let data = FileManager.default.contents(atPath: expanded),
-               let text = String(data: data, encoding: .utf8) {
-                let lines = text.split(separator: "\n", omittingEmptySubsequences: false).suffix(500)
-                stdoutContent = lines.joined(separator: "\n")
-            } else {
+            if let snippet = readTailOfFile(atPath: expanded, maxLines: 500) {
+                stdoutContent = snippet
+            } else if !FileManager.default.fileExists(atPath: expanded) {
                 stdoutContent = "File not found: \(expanded)"
+            } else {
+                stdoutContent = "Unable to read file: \(expanded)"
             }
         }
 
         if let errPath = service.plistDictionary.standardErrorPath {
             let expanded = NSString(string: errPath).expandingTildeInPath
-            if FileManager.default.fileExists(atPath: expanded),
-               let data = FileManager.default.contents(atPath: expanded),
-               let text = String(data: data, encoding: .utf8) {
-                let lines = text.split(separator: "\n", omittingEmptySubsequences: false).suffix(500)
-                stderrContent = lines.joined(separator: "\n")
-            } else {
+            if let snippet = readTailOfFile(atPath: expanded, maxLines: 500) {
+                stderrContent = snippet
+            } else if !FileManager.default.fileExists(atPath: expanded) {
                 stderrContent = "File not found: \(expanded)"
+            } else {
+                stderrContent = "Unable to read file: \(expanded)"
             }
         }
 
@@ -268,19 +279,36 @@ enum LaunchctlService: Sendable {
 
     // MARK: - Private
 
+    private static func readTailOfFile(atPath path: String, maxLines: Int, maxBytes: UInt64 = 65536) -> String? {
+        let expanded = NSString(string: path).expandingTildeInPath
+        guard FileManager.default.fileExists(atPath: expanded),
+              let attrs = try? FileManager.default.attributesOfItem(atPath: expanded),
+              let fileSize = attrs[.size] as? UInt64,
+              let handle = FileHandle(forReadingAtPath: expanded) else {
+            return nil
+        }
+        defer { try? handle.close() }
+
+        if fileSize > maxBytes {
+            try? handle.seek(toOffset: fileSize - maxBytes)
+        }
+        let data = handle.readDataToEndOfFile()
+        guard let text = String(data: data, encoding: .utf8) else { return nil }
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).suffix(maxLines)
+        return lines.joined(separator: "\n")
+    }
+
     private static func readLogFileSection(path: String, title: String) -> [String] {
         let expanded = NSString(string: path).expandingTildeInPath
         guard FileManager.default.fileExists(atPath: expanded) else {
             return ["=== \(title): \(expanded) ===\nFile does not exist."]
         }
 
-        guard let data = FileManager.default.contents(atPath: expanded),
-              let text = String(data: data, encoding: .utf8) else {
+        if let snippet = readTailOfFile(atPath: expanded, maxLines: 250) {
+            return ["=== \(title): \(expanded) ===\n\(snippet)"]
+        } else {
             return ["=== \(title): \(expanded) ===\nUnable to read file."]
         }
-
-        let lines = text.split(separator: "\n").suffix(250)
-        return ["=== \(title): \(expanded) ===\n\(lines.joined(separator: "\n"))"]
     }
 
     private static func parseFirstInt(in text: String, after token: String) -> Int? {

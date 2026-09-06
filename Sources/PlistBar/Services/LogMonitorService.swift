@@ -69,10 +69,22 @@ actor LogMonitorService {
         guard let handle = FileHandle(forReadingAtPath: path) else { return "" }
         defer { try? handle.close() }
 
-        try? handle.seek(toOffset: currentOffset)
-        let data = handle.readDataToEndOfFile()
-        let newOffset = currentOffset + UInt64(data.count)
-        offsets[label] = newOffset
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+              let fileSize = attrs[.size] as? UInt64 else { return "" }
+
+        let seekPos: UInt64
+        if fileSize < currentOffset {
+            // File was truncated or rotated
+            seekPos = 0
+        } else {
+            seekPos = currentOffset
+        }
+
+        try? handle.seek(toOffset: seekPos)
+        // Bound incremental read to 64KB to prevent sudden memory spikes
+        let maxChunk = 65536
+        let data = handle.readData(ofLength: maxChunk)
+        offsets[label] = seekPos + UInt64(data.count)
         return String(data: data, encoding: .utf8) ?? ""
     }
 }
