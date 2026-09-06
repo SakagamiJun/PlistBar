@@ -142,7 +142,7 @@ final class ServiceListViewModel {
         guard let service = selectedService else { return }
         isWorking = true
         let localizedLabel = label
-        actionStatus = .inProgress("\(localizedLabel) \(service.label)...")
+        actionStatus = .inProgress(l10n("status.action_in_progress", localizedLabel, service.label))
 
         Task.detached {
             let result: Result<Void, Error>
@@ -156,7 +156,7 @@ final class ServiceListViewModel {
                 self?.isWorking = false
                 switch result {
                 case .success:
-                    self?.actionStatus = .success("\(localizedLabel) completed")
+                    self?.actionStatus = .success(l10n("status.action_completed", localizedLabel))
                     self?.refresh()
                 case .failure(let error):
                     self?.actionStatus = .failure(error.localizedDescription)

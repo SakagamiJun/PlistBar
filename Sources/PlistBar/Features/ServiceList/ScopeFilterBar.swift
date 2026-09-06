@@ -28,9 +28,9 @@ struct ScopeFilterBar: View {
         let count = scopeCounts[scope] ?? 0
         let shortName: String = {
             switch scope {
-            case .userAgents: return "User"
-            case .globalAgents: return "Global"
-            case .globalDaemons: return "System"
+            case .userAgents: return l10n("scope.short.user")
+            case .globalAgents: return l10n("scope.short.global")
+            case .globalDaemons: return l10n("scope.short.system")
             }
         }()
 
@@ -70,7 +70,7 @@ struct ScopeFilterBar: View {
             Button {
                 statusFilter = nil
             } label: {
-                Label("All Statuses", systemImage: "line.3.horizontal.decrease.circle")
+                Label(l10n("status.filter.all_statuses"), systemImage: "line.3.horizontal.decrease.circle")
             }
 
             Divider()
@@ -79,7 +79,7 @@ struct ScopeFilterBar: View {
                 Button {
                     statusFilter = status
                 } label: {
-                    Label(status.rawValue, systemImage: status.symbolName)
+                    Label(status.displayName, systemImage: status.symbolName)
                 }
             }
         } label: {
@@ -88,11 +88,11 @@ struct ScopeFilterBar: View {
                     Circle()
                         .fill(status.color)
                         .frame(width: 6, height: 6)
-                    Text(status.rawValue)
+                    Text(status.displayName)
                         .font(.appCaption)
                         .fontWeight(.medium)
                 } else {
-                    Text("All")
+                    Text(l10n("status.filter.all"))
                         .font(.appCaption)
                         .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
                 }

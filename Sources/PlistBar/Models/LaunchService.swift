@@ -8,8 +8,13 @@ enum LaunchServiceScope: String, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    var displayName: LocalizedStringKey {
-        LocalizedStringKey(rawValue)
+    @MainActor
+    var displayName: String {
+        switch self {
+        case .userAgents: return l10n("scope.user_agents")
+        case .globalAgents: return l10n("scope.global_agents")
+        case .globalDaemons: return l10n("scope.global_daemons")
+        }
     }
 
     var directoryURL: URL {
@@ -55,8 +60,12 @@ enum LaunchServiceKind: String, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    var displayName: LocalizedStringKey {
-        LocalizedStringKey(rawValue)
+    @MainActor
+    var displayName: String {
+        switch self {
+        case .agent: return l10n("scope.kind.agent")
+        case .daemon: return l10n("scope.kind.daemon")
+        }
     }
 }
 
@@ -67,8 +76,13 @@ enum LaunchRuntimeStatus: String, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    var displayName: LocalizedStringKey {
-        LocalizedStringKey(rawValue)
+    @MainActor
+    var displayName: String {
+        switch self {
+        case .running: return l10n("status.running")
+        case .loaded: return l10n("status.loaded")
+        case .stopped: return l10n("status.stopped")
+        }
     }
 
     var color: Color {

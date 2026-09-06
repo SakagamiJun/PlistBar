@@ -15,6 +15,8 @@
 "action.edit" = "编辑 Plist";
 "action.start" = "启动";
 "action.stop" = "停止";
+"action.start_service" = "启动服务";
+"action.stop_service" = "停止服务";
 "action.load" = "加载";
 "action.unload" = "卸载";
 "action.enable" = "启用";

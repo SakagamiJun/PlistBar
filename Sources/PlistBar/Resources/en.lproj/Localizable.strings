@@ -15,6 +15,8 @@
 "action.edit" = "Edit Plist";
 "action.start" = "Start";
 "action.stop" = "Stop";
+"action.start_service" = "Start Service";
+"action.stop_service" = "Stop Service";
 "action.load" = "Load";
 "action.unload" = "Unload";
 "action.enable" = "Enable";

@@ -243,7 +243,7 @@ struct ServiceListView: View {
                     )
             }
             .buttonStyle(.plain)
-            .help("Search services")
+            .help(l10n("list.tooltip_search"))
 
             // Alerts icon
             Button {
@@ -262,7 +262,7 @@ struct ServiceListView: View {
                 }
             }
             .buttonStyle(.plain)
-            .help("View alerts")
+            .help(l10n("list.tooltip_alerts"))
 
             // Settings icon
             Button {
@@ -275,7 +275,7 @@ struct ServiceListView: View {
                     .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
             }
             .buttonStyle(.plain)
-            .help("Settings")
+            .help(l10n("list.tooltip_settings"))
 
             // Refresh icon
             Button {
@@ -286,7 +286,7 @@ struct ServiceListView: View {
                     .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
             }
             .buttonStyle(.plain)
-            .help("Refresh all services")
+            .help(l10n("list.tooltip_refresh"))
         }
         .menuRowPadding()
     }
@@ -299,7 +299,7 @@ struct ServiceListView: View {
                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                 .font(.appCaption)
 
-            TextField("Search by label...", text: $viewModel.searchText)
+            TextField(l10n("list.search_placeholder"), text: $viewModel.searchText)
                 .textFieldStyle(.plain)
                 .font(.appBody)
 
@@ -334,16 +334,16 @@ struct ServiceListView: View {
                             }
                         },
                         onStart: {
-                            viewModel.runAction(LaunchctlService.start, label: "Starting")
+                            viewModel.runAction(LaunchctlService.start, label: l10n("status.starting"))
                         },
                         onStop: {
-                            viewModel.runAction(LaunchctlService.stop, label: "Stopping")
+                            viewModel.runAction(LaunchctlService.stop, label: l10n("status.stopping"))
                         },
                         onToggleEnable: {
                             if service.enabled {
-                                viewModel.runAction(LaunchctlService.disable, label: "Disabling")
+                                viewModel.runAction(LaunchctlService.disable, label: l10n("status.disabling"))
                             } else {
-                                viewModel.runAction(LaunchctlService.enable, label: "Enabling")
+                                viewModel.runAction(LaunchctlService.enable, label: l10n("status.enabling"))
                             }
                         }
                     )
@@ -365,7 +365,7 @@ struct ServiceListView: View {
             } label: {
                 HStack(spacing: 3) {
                     Image(systemName: "plus")
-                    Text("New Service")
+                    Text(l10n("list.new_service"))
                 }
                 .font(.appCaption)
                 .fontWeight(.medium)
@@ -376,7 +376,7 @@ struct ServiceListView: View {
             Spacer()
 
             let total = viewModel.filteredServices.count
-            Text("\(total) service\(total == 1 ? "" : "s")")
+            Text(total == 1 ? l10n("list.service_count_single") : l10n("list.service_count", total))
                 .font(.system(size: 10))
                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
         }
@@ -390,12 +390,12 @@ struct ServiceListView: View {
             Image(systemName: "tray")
                 .font(.system(size: 30))
                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
-            Text("No services matching filter")
+            Text(l10n("list.empty"))
                 .font(.appBody)
                 .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
 
             if !viewModel.searchText.isEmpty {
-                Button("Clear search") {
+                Button(l10n("action.clear_search")) {
                     viewModel.searchText = ""
                 }
                 .font(.appCaption)
@@ -411,7 +411,7 @@ struct ServiceListView: View {
         VStack(spacing: LayoutTokens.space4) {
             ProgressView()
                 .controlSize(.small)
-            Text("Scanning launchd services...")
+            Text(l10n("list.loading"))
                 .font(.appCaption)
                 .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
         }
@@ -420,11 +420,11 @@ struct ServiceListView: View {
 
     private var missingServiceView: some View {
         VStack(spacing: LayoutTokens.space6) {
-            Text("Service not found")
+            Text(l10n("list.not_found"))
                 .font(.appBody)
                 .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
 
-            Button("Back to List") {
+            Button(l10n("action.back_to_list")) {
                 withAnimation(.easeInOut(duration: 0.18)) {
                     activeScreen = .list
                 }

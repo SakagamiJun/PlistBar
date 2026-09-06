@@ -41,7 +41,7 @@ struct ServiceRowView: View {
                     }
 
                     if !service.enabled {
-                        Text("• disabled")
+                        Text("• \(l10n("list.status_tag_disabled"))")
                             .font(.appCaption)
                             .foregroundStyle(ColorTokens.warning)
                     }
@@ -71,13 +71,13 @@ struct ServiceRowView: View {
                 Button {
                     onStop()
                 } label: {
-                    Label("Stop Service", systemImage: "stop.fill")
+                    Label(l10n("action.stop_service"), systemImage: "stop.fill")
                 }
             } else {
                 Button {
                     onStart()
                 } label: {
-                    Label("Start Service", systemImage: "play.fill")
+                    Label(l10n("action.start_service"), systemImage: "play.fill")
                 }
             }
 
@@ -86,7 +86,7 @@ struct ServiceRowView: View {
                     onToggleEnable()
                 } label: {
                     Label(
-                        service.enabled ? "Disable" : "Enable",
+                        service.enabled ? l10n("action.disable") : l10n("action.enable"),
                         systemImage: service.enabled ? "slash.circle" : "checkmark.circle"
                     )
                 }
@@ -97,21 +97,21 @@ struct ServiceRowView: View {
             Button {
                 NSWorkspace.shared.activateFileViewerSelecting([service.plistURL])
             } label: {
-                Label("Reveal in Finder", systemImage: "folder")
+                Label(l10n("action.reveal_in_finder"), systemImage: "folder")
             }
 
             Button {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(service.label, forType: .string)
             } label: {
-                Label("Copy Label", systemImage: "doc.on.doc")
+                Label(l10n("action.copy_label"), systemImage: "doc.on.doc")
             }
 
             Button {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(service.plistURL.path, forType: .string)
             } label: {
-                Label("Copy Plist Path", systemImage: "link")
+                Label(l10n("action.copy_plist_path"), systemImage: "link")
             }
         }
     }
@@ -128,7 +128,7 @@ struct ServiceRowView: View {
                     .foregroundStyle(ColorTokens.critical.opacity(0.85))
             }
             .buttonStyle(.plain)
-            .help("Stop service")
+            .help(l10n("list.tooltip_stop"))
 
         case .loaded, .stopped:
             Button(action: onStart) {
@@ -137,7 +137,7 @@ struct ServiceRowView: View {
                     .foregroundStyle(ColorTokens.positive.opacity(0.85))
             }
             .buttonStyle(.plain)
-            .help("Start service")
+            .help(l10n("list.tooltip_start"))
         }
     }
 }

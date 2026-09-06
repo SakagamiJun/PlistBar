@@ -59,13 +59,13 @@ final class StatusItemController: NSObject {
         if alertViewModel.hasError {
             button.image = NSImage(
                 systemSymbolName: "exclamationmark.triangle.fill",
-                accessibilityDescription: "PlistBar - Error"
+                accessibilityDescription: "PlistBar - \(l10n("severity.error"))"
             )
             button.image?.isTemplate = false
         } else if alertViewModel.hasWarning || alertViewModel.hasUnread {
             button.image = NSImage(
                 systemSymbolName: "exclamationmark.triangle",
-                accessibilityDescription: "PlistBar - Warning"
+                accessibilityDescription: "PlistBar - \(l10n("severity.warning"))"
             )
             button.image?.isTemplate = false
         } else {
