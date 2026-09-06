@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "PlistBar",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "PlistBar", targets: ["PlistBar"]),
@@ -11,6 +12,9 @@ let package = Package(
         .executableTarget(
             name: "PlistBar",
             path: "Sources/PlistBar",
+            resources: [
+                .process("Resources"),
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v6),
             ]

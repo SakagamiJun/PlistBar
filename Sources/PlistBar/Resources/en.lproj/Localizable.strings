@@ -1,0 +1,192 @@
+/* PlistBar English Localization */
+
+/* General & App */
+"app.name" = "PlistBar";
+"app.tagline" = "Lightweight launchd manager with memory safety";
+"app.version" = "v1.0.0";
+
+/* Common Actions */
+"action.back" = "Back";
+"action.cancel" = "Cancel";
+"action.save" = "Save";
+"action.confirm" = "Confirm";
+"action.clear" = "Clear";
+"action.view" = "View";
+"action.edit" = "Edit Plist";
+"action.start" = "Start";
+"action.stop" = "Stop";
+"action.load" = "Load";
+"action.unload" = "Unload";
+"action.enable" = "Enable";
+"action.disable" = "Disable";
+"action.delete" = "Delete";
+"action.reveal_in_finder" = "Reveal in Finder";
+"action.copy_label" = "Copy Label";
+"action.copy_plist_path" = "Copy Plist Path";
+"action.mark_read" = "Mark Read";
+"action.reset_defaults" = "Reset to Defaults";
+"action.add_rule" = "Add Rule";
+"action.save_rule" = "Save Rule";
+"action.clear_search" = "Clear search";
+"action.back_to_list" = "Back to List";
+
+/* Main List & Header */
+"list.search_placeholder" = "Search by label...";
+"list.new_service" = "New Service";
+"list.service_count" = "%d services";
+"list.service_count_single" = "1 service";
+"list.empty" = "No services matching filter";
+"list.loading" = "Scanning launchd services...";
+"list.not_found" = "Service not found";
+"list.tooltip_search" = "Search services";
+"list.tooltip_alerts" = "View alerts";
+"list.tooltip_settings" = "Settings";
+"list.tooltip_refresh" = "Refresh all services";
+"list.tooltip_start" = "Start service";
+"list.tooltip_stop" = "Stop service";
+"list.status_tag_disabled" = "disabled";
+
+/* Status / Progress */
+"status.starting" = "Starting";
+"status.stopping" = "Stopping";
+"status.enabling" = "Enabling";
+"status.disabling" = "Disabling";
+"status.loading" = "Loading";
+"status.unloading" = "Unloading";
+"status.deleting" = "Deleting";
+"status.action_in_progress" = "%@ %@...";
+"status.action_completed" = "%@ completed";
+
+/* Scope & Runtime Status */
+"scope.user_agents" = "User Agents";
+"scope.global_agents" = "Global Agents";
+"scope.global_daemons" = "Global Daemons";
+"scope.short.user" = "User";
+"scope.short.global" = "Global";
+"scope.short.system" = "System";
+"scope.kind.agent" = "Agent";
+"scope.kind.daemon" = "Daemon";
+"status.filter.all" = "All";
+"status.filter.all_statuses" = "All Statuses";
+"status.running" = "Running";
+"status.loaded" = "Loaded";
+"status.stopped" = "Not Running";
+
+/* Detail View */
+"detail.tooltip_reveal" = "Reveal plist in Finder";
+"detail.read_only" = "Read-Only";
+"detail.read_only_tooltip" = "Global services are system-protected.";
+"detail.badge.scope" = "Scope";
+"detail.badge.status" = "Status";
+"detail.badge.pid" = "PID";
+"detail.badge.enabled" = "Enabled";
+"detail.badge.run_at_load" = "RunAtLoad";
+"detail.badge.keep_alive" = "KeepAlive";
+"common.yes" = "Yes";
+"common.no" = "No";
+"detail.confirm_stop_title" = "Stop";
+"detail.confirm_stop_msg" = "Stop %@?";
+"detail.confirm_delete_title" = "Delete";
+"detail.confirm_delete_msg" = "Permanently delete plist for %@?";
+
+/* Editor View */
+"editor.title" = "Edit Plist";
+"editor.mode_form" = "Form";
+"editor.mode_xml" = "XML";
+"editor.section.identity" = "Identity & Executable";
+"editor.field.label" = "Label";
+"editor.field.program" = "Program";
+"editor.field.arguments" = "Arguments (one per line)";
+"editor.section.behavior" = "Process Behavior";
+"editor.field.run_at_load" = "Run At Load";
+"editor.field.keep_alive" = "Keep Alive";
+"editor.section.scheduling" = "Scheduling";
+"editor.field.enable_schedule" = "Enable Schedule";
+"editor.field.mode" = "Mode";
+"editor.mode.interval" = "Interval";
+"editor.mode.calendar" = "Calendar";
+"editor.field.interval_seconds" = "Interval (seconds)";
+"editor.presets" = "Presets:";
+"editor.btn_add_entry" = "Add Entry";
+"editor.calendar_entry_title" = "Entry %d: %@";
+"editor.calendar.hour" = "Hour";
+"editor.calendar.minute" = "Min";
+"editor.calendar.day" = "Day";
+"editor.calendar.weekday" = "Wkday";
+"editor.section.paths" = "Standard Paths";
+"editor.field.working_dir" = "Working Dir";
+"editor.field.stdout" = "stdout";
+"editor.field.stderr" = "stderr";
+"editor.section.advanced" = "Advanced (Optional)";
+"editor.field.environment" = "Environment (KEY=VAL)";
+"editor.field.watch_paths" = "Watch Paths (one per line)";
+"editor.error.label_required" = "Label is required to name the plist file.";
+"editor.error.invalid_xml" = "Invalid XML: %@";
+
+/* Template Picker */
+"template.title" = "New Launch Agent";
+"template.subtitle" = "Select a starter template:";
+"template.safe_notice" = "New services are safely created in ~/Library/LaunchAgents";
+"template.basic_agent.name" = "Basic Agent";
+"template.basic_agent.desc" = "Daemon-style agent, runs on login";
+"template.basic_agent.tag" = "Agent";
+"template.interval_task.name" = "Interval Task";
+"template.interval_task.desc" = "Runs periodically (e.g. every 1 hour)";
+"template.interval_task.tag" = "Interval";
+"template.calendar_task.name" = "Calendar Task";
+"template.calendar_task.desc" = "Runs at specific times like cron";
+"template.calendar_task.tag" = "Calendar";
+"template.watch_task.name" = "Directory Watcher";
+"template.watch_task.desc" = "Runs whenever files in a path change";
+"template.watch_task.tag" = "Watch";
+"template.blank.name" = "Blank Plist";
+"template.blank.desc" = "Empty draft, customize all properties";
+"template.blank.tag" = "Custom";
+
+/* Log Viewer */
+"logs.tab.stdout" = "stdout";
+"logs.tab.stderr" = "stderr";
+"logs.tab.unified" = "unified";
+"logs.tooltip_copy" = "Copy current log to clipboard";
+"logs.tooltip_reload" = "Reload log window";
+"logs.search_placeholder" = "Filter log lines...";
+"logs.loading" = "Loading log window (64KB tail)...";
+"logs.empty" = "No log output";
+
+/* Alerts */
+"alerts.title" = "Alerts";
+"alerts.summary_unread" = "%d unread alerts";
+"alerts.summary_unread_single" = "1 unread alert";
+"alerts.empty_title" = "No alerts triggered";
+"alerts.empty_subtitle" = "Real-time log rules monitor stderr/stdout";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.section.language" = "Language";
+"settings.language" = "Language";
+"settings.language.system" = "System Default";
+"settings.language.zh_hans" = "简体中文";
+"settings.language.en" = "English";
+"settings.section.polling_scope" = "Polling & Scope";
+"settings.heartbeat_interval" = "Heartbeat Interval";
+"settings.default_scope" = "Default Scope";
+"settings.section.notifications" = "Notifications";
+"settings.show_notifications" = "Show System Notifications";
+"settings.section.log_rules" = "Log Alert Rules";
+"settings.rule_name_placeholder" = "Rule Name (e.g. Timeout)";
+"settings.rule_pattern_placeholder" = "Regex Pattern (e.g. (?i)\\btimeout\\b)";
+"settings.section.about" = "About";
+"severity.error" = "Error";
+"severity.warning" = "Warning";
+"severity.info" = "Info";
+
+/* Calendar Entry summaries */
+"calendar.month" = "Month %d";
+"calendar.day" = "Day %d";
+"calendar.weekday.sun" = "Sun";
+"calendar.weekday.mon" = "Mon";
+"calendar.weekday.tue" = "Tue";
+"calendar.weekday.wed" = "Wed";
+"calendar.weekday.thu" = "Thu";
+"calendar.weekday.fri" = "Fri";
+"calendar.weekday.sat" = "Sat";

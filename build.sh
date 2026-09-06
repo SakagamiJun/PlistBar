@@ -46,6 +46,13 @@ cat <<EOF > "${OUTPUT_DIR}/Contents/Info.plist"
     <string>1.0</string>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>zh-Hans</string>
+    </array>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>LSUIElement</key>
@@ -58,8 +65,11 @@ cat <<EOF > "${OUTPUT_DIR}/Contents/Info.plist"
 </plist>
 EOF
 
-# 如果有资源文件，也可以将其拷贝到 Resources 目录
-# cp -r "${BIN_PATH}/PlistBar_PlistBar.bundle" "${OUTPUT_DIR}/Contents/Resources/" 2>/dev/null || true
+# 拷贝资源文件（包括多语言资源包）
+if [ -d "${BIN_PATH}/${APP_NAME}_${APP_NAME}.bundle" ]; then
+    cp -r "${BIN_PATH}/${APP_NAME}_${APP_NAME}.bundle" "${OUTPUT_DIR}/Contents/Resources/"
+    cp -r "${BIN_PATH}/${APP_NAME}_${APP_NAME}.bundle/"*.lproj "${OUTPUT_DIR}/Contents/Resources/" 2>/dev/null || true
+fi
 
 echo "✅ 打包完成！应用程序位于: ${OUTPUT_DIR}"
 echo "你可以通过命令打开它: open ${OUTPUT_DIR}"
