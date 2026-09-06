@@ -5,6 +5,15 @@ struct LogRule: Identifiable, Hashable, Codable, Sendable {
         case info = "Info"
         case warning = "Warning"
         case error = "Error"
+
+        @MainActor
+        var displayName: String {
+            switch self {
+            case .error: return l10n("severity.error")
+            case .warning: return l10n("severity.warning")
+            case .info: return l10n("severity.info")
+            }
+        }
     }
 
     let id: UUID

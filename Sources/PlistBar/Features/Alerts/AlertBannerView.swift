@@ -21,7 +21,8 @@ struct AlertSummaryBanner: View {
                         .foregroundStyle(bannerColor)
                         .font(.appBody)
 
-                    Text("\(alertViewModel.unreadCount) unread alert\(alertViewModel.unreadCount > 1 ? "s" : "")")
+                    let count = alertViewModel.unreadCount
+                    Text(count == 1 ? l10n("alerts.summary_unread_single") : l10n("alerts.summary_unread", count))
                         .font(.appCaption)
                         .fontWeight(.medium)
                         .foregroundStyle(ColorTokens.primaryLabel(isDark: isDark))
@@ -29,7 +30,7 @@ struct AlertSummaryBanner: View {
                     Spacer()
 
                     HStack(spacing: 2) {
-                        Text("View")
+                        Text(l10n("action.view"))
                             .font(.appCaption)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 8))
@@ -64,7 +65,7 @@ struct AlertBannerView: View {
                     Button(action: onBack) {
                         HStack(spacing: 2) {
                             Image(systemName: "chevron.left")
-                            Text("Back")
+                            Text(l10n("action.back"))
                         }
                         .font(.appCaption)
                     }
@@ -72,7 +73,7 @@ struct AlertBannerView: View {
                     .foregroundStyle(ColorTokens.accent)
                 }
 
-                Text("Alerts")
+                Text(l10n("alerts.title"))
                     .font(.appSubhead)
                     .fontWeight(.semibold)
 
@@ -88,12 +89,12 @@ struct AlertBannerView: View {
                 Spacer()
 
                 if !alertViewModel.alerts.isEmpty {
-                    Button("Mark Read") { alertViewModel.markAllRead() }
+                    Button(l10n("action.mark_read")) { alertViewModel.markAllRead() }
                         .font(.appCaption)
                         .buttonStyle(.bordered)
                         .controlSize(.mini)
 
-                    Button("Clear") { alertViewModel.clear() }
+                    Button(l10n("action.clear")) { alertViewModel.clear() }
                         .font(.appCaption)
                         .buttonStyle(.bordered)
                         .controlSize(.mini)
@@ -109,10 +110,10 @@ struct AlertBannerView: View {
                     Image(systemName: "checkmark.shield.fill")
                         .font(.system(size: 32))
                         .foregroundStyle(ColorTokens.positive)
-                    Text("No alerts triggered")
+                    Text(l10n("alerts.empty_title"))
                         .font(.appBody)
                         .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
-                    Text("Real-time log rules monitor stderr/stdout")
+                    Text(l10n("alerts.empty_subtitle"))
                         .font(.appCaption)
                         .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                 }

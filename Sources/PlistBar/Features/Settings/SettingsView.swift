@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage("plistbar.notifications_enabled") private var notificationsEnabled: Bool = true
     @AppStorage("plistbar.max_log_lines") private var maxLogLines: Int = 500
 
+    @State private var localizationManager = LocalizationManager.shared
     @State private var showingAddRule = false
     @State private var newRuleName = ""
     @State private var newRulePattern = ""
@@ -25,7 +26,7 @@ struct SettingsView: View {
                     Button(action: onBack) {
                         HStack(spacing: 2) {
                             Image(systemName: "chevron.left")
-                            Text("Back")
+                            Text(l10n("action.back"))
                         }
                         .font(.appCaption)
                     }
@@ -33,7 +34,7 @@ struct SettingsView: View {
                     .foregroundStyle(ColorTokens.accent)
                 }
 
-                Text("Settings")
+                Text(l10n("settings.title"))
                     .font(.appSubhead)
                     .fontWeight(.semibold)
 
@@ -45,10 +46,28 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: LayoutTokens.space8) {
-                    // General
-                    settingsSection("Polling & Scope") {
+                    // Language
+                    settingsSection(l10n("settings.section.language")) {
                         HStack {
-                            Text("Heartbeat Interval")
+                            Text(l10n("settings.language"))
+                                .font(.appBody)
+                            Spacer()
+                            Picker("", selection: Binding(
+                                get: { localizationManager.selectedLanguage },
+                                set: { localizationManager.setLanguage($0) }
+                            )) {
+                                ForEach(AppLanguage.allCases) { lang in
+                                    Text(lang.displayName).tag(lang)
+                                }
+                            }
+                            .frame(width: 150)
+                        }
+                    }
+
+                    // General
+                    settingsSection(l10n("settings.section.polling_scope")) {
+                        HStack {
+                            Text(l10n("settings.heartbeat_interval"))
                                 .font(.appBody)
                             Spacer()
                             Picker("", selection: $heartbeatInterval) {
@@ -61,7 +80,7 @@ struct SettingsView: View {
                         }
 
                         HStack {
-                            Text("Default Scope")
+                            Text(l10n("settings.default_scope"))
                                 .font(.appBody)
                             Spacer()
                             Picker("", selection: $defaultScopeRaw) {
@@ -74,8 +93,8 @@ struct SettingsView: View {
                     }
 
                     // System Notifications
-                    settingsSection("Notifications") {
-                        Toggle("Show System Notifications", isOn: $notificationsEnabled)
+                    settingsSection(l10n("settings.section.notifications")) {
+                        Toggle(l10n("settings.show_notifications"), isOn: $notificationsEnabled)
                             .font(.appBody)
                             .onChange(of: notificationsEnabled) { _, enabled in
                                 if enabled {
@@ -85,7 +104,7 @@ struct SettingsView: View {
                     }
 
                     // Log Rules Management
-                    settingsSection("Log Alert Rules") {
+                    settingsSection(l10n("settings.section.log_rules")) {
                         VStack(spacing: LayoutTokens.space4) {
                             ForEach(alertViewModel.rules) { rule in
                                 HStack(spacing: LayoutTokens.space4) {
@@ -132,7 +151,7 @@ struct SettingsView: View {
                                     } label: {
                                         HStack(spacing: 2) {
                                             Image(systemName: "plus.circle")
-                                            Text("Add Rule")
+                                            Text(l10n("action.add_rule"))
                                         }
                                         .font(.appCaption)
                                     }
@@ -141,7 +160,7 @@ struct SettingsView: View {
 
                                     Spacer()
 
-                                    Button("Reset to Defaults") {
+                                    Button(l10n("action.reset_defaults")) {
                                         alertViewModel.resetRulesToDefault()
                                     }
                                     .font(.system(size: 9))
@@ -153,18 +172,18 @@ struct SettingsView: View {
                     }
 
                     // About section
-                    settingsSection("About") {
+                    settingsSection(l10n("settings.section.about")) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("PlistBar for macOS")
+                                Text(l10n("app.name"))
                                     .font(.appBody)
                                     .fontWeight(.medium)
-                                Text("Lightweight launchd manager with memory safety")
+                                Text(l10n("app.tagline"))
                                     .font(.system(size: 9))
                                     .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                             }
                             Spacer()
-                            Text("v1.0.0")
+                            Text(l10n("app.version"))
                                 .font(.appCaption)
                                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                         }
@@ -178,24 +197,24 @@ struct SettingsView: View {
     private var addRuleForm: some View {
         VStack(alignment: .leading, spacing: LayoutTokens.space4) {
             HStack {
-                TextField("Rule Name (e.g. Timeout)", text: $newRuleName)
+                TextField(l10n("settings.rule_name_placeholder"), text: $newRuleName)
                     .textFieldStyle(.roundedBorder)
                     .font(.appCaption)
 
                 Picker("", selection: $newRuleSeverity) {
-                    Text("Error").tag(LogRule.Severity.error)
-                    Text("Warning").tag(LogRule.Severity.warning)
-                    Text("Info").tag(LogRule.Severity.info)
+                    ForEach(LogRule.Severity.allCases, id: \.self) { sev in
+                        Text(sev.displayName).tag(sev)
+                    }
                 }
                 .frame(width: 80)
             }
 
-            TextField("Regex Pattern (e.g. (?i)\\btimeout\\b)", text: $newRulePattern)
+            TextField(l10n("settings.rule_pattern_placeholder"), text: $newRulePattern)
                 .textFieldStyle(.roundedBorder)
                 .font(.appCaption)
 
             HStack {
-                Button("Cancel") {
+                Button(l10n("action.cancel")) {
                     showingAddRule = false
                     newRuleName = ""
                     newRulePattern = ""
@@ -206,7 +225,7 @@ struct SettingsView: View {
 
                 Spacer()
 
-                Button("Save Rule") {
+                Button(l10n("action.save_rule")) {
                     let trimmedName = newRuleName.trimmingCharacters(in: .whitespaces)
                     let trimmedPattern = newRulePattern.trimmingCharacters(in: .whitespaces)
                     guard !trimmedName.isEmpty, !trimmedPattern.isEmpty else { return }
