@@ -1,6 +1,6 @@
 name: Release & Update Homebrew Cask
 
-on:
+'on':
   push:
     tags:
       - 'v*'
@@ -37,7 +37,6 @@ jobs:
       - name: Package App Bundle into ZIP
         id: package
         run: |
-          # Use ditto to preserve macOS metadata, permissions, and symlinks
           ditto -c -k --sequesterRsrc --keepParent build/PlistBar.app PlistBar.zip
           SHA256=$(shasum -a 256 PlistBar.zip | awk '{print $1}')
           echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
@@ -54,41 +53,14 @@ jobs:
 
       - name: Update Homebrew Cask (Personal Tap)
         env:
-          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN || secrets.TAP_TOKEN || secrets.GH_PAT }}
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           TAP_REPO: "SakagamiJun/homebrew-tap"
           VERSION: ${{ steps.version.outputs.version }}
           SHA256: ${{ steps.package.outputs.sha256 }}
         run: |
-          CASK_CONTENT=$(cat <<END_CASK
-cask "plistbar" do
-  version "${VERSION}"
-  sha256 "${SHA256}"
-
-  url "https://github.com/SakagamiJun/PlistBar/releases/download/v#{version}/PlistBar.zip"
-  name "PlistBar"
-  desc "Lightweight launchd manager with memory safety"
-  homepage "https://github.com/SakagamiJun/PlistBar"
-
-  depends_on macos: ">= :sonoma"
-
-  app "PlistBar.app"
-
-  zap trash: [
-    "~/Library/Application Support/com.sakagamijun.PlistBar",
-    "~/Library/Preferences/com.sakagamijun.PlistBar.plist",
-  ]
-end
-END_CASK
-          )
-
           if [ -z "$TAP_TOKEN" ]; then
             echo "⚠️ HOMEBREW_TAP_TOKEN is not configured in repository secrets."
             echo "To automatically update your tap repository (${TAP_REPO}), add a Personal Access Token (PAT) with repo scope named 'HOMEBREW_TAP_TOKEN'."
-            echo ""
-            echo "Cask definition for Casks/plistbar.rb in ${TAP_REPO}:"
-            echo "----------------------------------------"
-            echo "$CASK_CONTENT"
-            echo "----------------------------------------"
             exit 0
           fi
 
@@ -96,7 +68,27 @@ END_CASK
           git clone "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPO}.git" tap_repo
           cd tap_repo
           mkdir -p Casks
-          echo "$CASK_CONTENT" > Casks/plistbar.rb
+
+          printf '%s\n' \
+            'cask "plistbar" do' \
+            "  version \"${VERSION}\"" \
+            "  sha256 \"${SHA256}\"" \
+            '' \
+            '  url "https://github.com/SakagamiJun/PlistBar/releases/download/v#{version}/PlistBar.zip"' \
+            '  name "PlistBar"' \
+            '  desc "Lightweight launchd manager with memory safety"' \
+            '  homepage "https://github.com/SakagamiJun/PlistBar"' \
+            '' \
+            '  depends_on macos: ">= :sonoma"' \
+            '' \
+            '  app "PlistBar.app"' \
+            '' \
+            '  zap trash: [' \
+            '    "~/Library/Application Support/com.sakagamijun.PlistBar",' \
+            '    "~/Library/Preferences/com.sakagamijun.PlistBar.plist",' \
+            '  ]' \
+            'end' > Casks/plistbar.rb
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Casks/plistbar.rb
