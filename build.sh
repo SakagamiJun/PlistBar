@@ -9,7 +9,15 @@ APP_BUNDLE="${APP_NAME}.app"
 BUILD_DIR="build"
 OUTPUT_DIR="${BUILD_DIR}/${APP_BUNDLE}"
 
-echo "🚀 开始构建 ${APP_NAME} (Release)..."
+# 获取版本号：优先使用环境变量 VERSION，其次从 git tag 获取，最后默认为 1.0.0
+RAW_VERSION="${VERSION:-$(git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "1.0.0")}"
+APP_VERSION="${RAW_VERSION#v}"
+[ -z "$APP_VERSION" ] && APP_VERSION="1.0.0"
+
+# 获取构建编号：提交次数
+BUILD_NUMBER=$(git rev-list --count HEAD 2>/dev/null || echo "1")
+
+echo "🚀 开始构建 ${APP_NAME} v${APP_VERSION} (Build ${BUILD_NUMBER}) (Release)..."
 
 # 执行 Swift 编译
 swift build -c release
@@ -27,6 +35,9 @@ mkdir -p "${OUTPUT_DIR}/Contents/Resources"
 # 拷贝可执行文件
 cp "${BIN_PATH}/${APP_NAME}" "${OUTPUT_DIR}/Contents/MacOS/"
 
+# 写入版本标识文件
+echo "${APP_VERSION}" > "${OUTPUT_DIR}/Contents/Resources/version.txt"
+
 # 创建 Info.plist
 # 添加 LSUIElement 键以确保应用不会在 Dock 栏出现
 cat <<EOF > "${OUTPUT_DIR}/Contents/Info.plist"
@@ -43,9 +54,9 @@ cat <<EOF > "${OUTPUT_DIR}/Contents/Info.plist"
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>${APP_VERSION}</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>${BUILD_NUMBER}</string>
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleLocalizations</key>

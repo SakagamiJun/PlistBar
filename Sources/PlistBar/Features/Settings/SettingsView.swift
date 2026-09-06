@@ -220,7 +220,7 @@ struct SettingsView: View {
                                     .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                             }
                             Spacer()
-                            Text(l10n("app.version"))
+                            Text(AppVersion.current)
                                 .font(.appCaption)
                                 .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                         }
