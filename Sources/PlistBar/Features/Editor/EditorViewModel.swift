@@ -7,7 +7,7 @@ final class EditorViewModel {
     var rawXMLText: String = ""
     var errorMessage: String?
 
-    init(draft: LaunchPlistDraft) {
+    init(draft: LaunchPlistDraft = .blank()) {
         self.draft = draft
     }
 
@@ -21,7 +21,8 @@ final class EditorViewModel {
         errorMessage = nil
     }
 
-    func save(to service: LaunchService) {
+    @discardableResult
+    func save(to service: LaunchService) -> Bool {
         do {
             let finalDict: [String: Any]
             if isRawXMLMode {
@@ -33,18 +34,28 @@ final class EditorViewModel {
             try PlistEditorService.validate(dictionary: finalDict)
             try PlistEditorService.writePlist(dictionary: finalDict, to: service.plistURL)
             errorMessage = nil
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            return false
         }
     }
 
-    func createNewUserAgent(filename: String) throws -> URL {
-        let trimmed = filename.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            throw CommandError.executionFailed("Filename is required.")
+    func createNewUserAgent(filename: String? = nil) throws -> URL {
+        let rawName: String
+        if let filename, !filename.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            rawName = filename.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            rawName = draft.label.trimmingCharacters(in: .whitespacesAndNewlines)
         }
 
-        let finalName = trimmed.hasSuffix(".plist") ? trimmed : "\(trimmed).plist"
+        guard !rawName.isEmpty else {
+            let error = CommandError.executionFailed("Label is required to name the plist file.")
+            errorMessage = error.localizedDescription
+            throw error
+        }
+
+        let finalName = rawName.hasSuffix(".plist") ? rawName : "\(rawName).plist"
         let url = LaunchServiceScope.userAgents.directoryURL.appendingPathComponent(finalName)
 
         let dict: [String: Any]

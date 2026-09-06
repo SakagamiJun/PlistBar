@@ -129,4 +129,32 @@ struct PlistEditorTests {
         let dict = try draft.toDictionary()
         try PlistEditorService.validate(dictionary: dict)
     }
+
+    @Test("CalendarEntry summary format")
+    func calendarEntrySummary() {
+        let entry1 = LaunchPlistDraft.CalendarEntry(minute: 15, hour: 14)
+        #expect(entry1.summary == "14:15")
+
+        let entry2 = LaunchPlistDraft.CalendarEntry(minute: 0, hour: 9, weekday: 2)
+        #expect(entry2.summary.contains("Mon"))
+        #expect(entry2.summary.contains("09:00"))
+    }
+
+    @Test("LaunchPlistDraft environmentVariables and watchPaths roundtrip")
+    func advancedDraftProperties() throws {
+        var draft = LaunchPlistDraft.blank()
+        draft.label = "com.test.advanced"
+        draft.program = "/bin/sh"
+        draft.environmentVariablesText = "FOO=bar\nBAZ=qux"
+        draft.watchPathsText = "/tmp/dir1\n/tmp/dir2"
+
+        let dict = try draft.toDictionary()
+        let env = dict["EnvironmentVariables"] as? [String: String]
+        #expect(env?["FOO"] == "bar")
+        #expect(env?["BAZ"] == "qux")
+
+        let watch = dict["WatchPaths"] as? [String]
+        #expect(watch?.contains("/tmp/dir1") == true)
+        #expect(watch?.contains("/tmp/dir2") == true)
+    }
 }

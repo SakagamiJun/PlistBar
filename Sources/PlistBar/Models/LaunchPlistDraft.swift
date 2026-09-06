@@ -51,6 +51,20 @@ struct LaunchPlistDraft: @unchecked Sendable {
             return dict
         }
 
+        var summary: String {
+            var parts: [String] = []
+            if let m = month { parts.append("Month \(m)") }
+            if let w = weekday {
+                let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                if w >= 1 && w <= 7 { parts.append(dayNames[w]) } else { parts.append("Weekday \(w)") }
+            }
+            if let d = day { parts.append("Day \(d)") }
+            let hStr = hour != nil ? String(format: "%02d", hour!) : "*"
+            let mStr = minute != nil ? String(format: "%02d", minute!) : "*"
+            parts.append("\(hStr):\(mStr)")
+            return parts.joined(separator: " ")
+        }
+
         private static func readInt(_ value: Any?) -> Int? {
             switch value {
             case let int as Int:
@@ -293,6 +307,39 @@ struct LaunchPlistDraft: @unchecked Sendable {
     var workingDirectory: String {
         get { stringValue(for: "WorkingDirectory") }
         set { setStringValue(for: "WorkingDirectory", value: newValue) }
+    }
+
+    var watchPathsText: String {
+        get { stringArrayValue(for: "WatchPaths").joined(separator: "\n") }
+        set {
+            let values = newValue
+                .split(separator: "\n")
+                .map(String.init)
+            setStringArrayValue(for: "WatchPaths", values: values)
+        }
+    }
+
+    var environmentVariablesText: String {
+        get {
+            guard let dict = fields["EnvironmentVariables"] as? [String: Any] else { return "" }
+            return dict.map { "\($0.key)=\($0.value)" }.sorted().joined(separator: "\n")
+        }
+        set {
+            var dict: [String: String] = [:]
+            for line in newValue.split(separator: "\n") {
+                let parts = line.split(separator: "=", maxSplits: 1).map(String.init)
+                if parts.count == 2 {
+                    let key = parts[0].trimmingCharacters(in: .whitespaces)
+                    let val = parts[1].trimmingCharacters(in: .whitespaces)
+                    if !key.isEmpty { dict[key] = val }
+                }
+            }
+            if dict.isEmpty {
+                fields.removeValue(forKey: "EnvironmentVariables")
+            } else {
+                fields["EnvironmentVariables"] = dict
+            }
+        }
     }
 }
 
