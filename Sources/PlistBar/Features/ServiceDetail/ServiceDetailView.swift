@@ -1,15 +1,20 @@
+import AppKit
 import SwiftUI
 
 struct ServiceDetailView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let service: LaunchService
     @Bindable var viewModel: ServiceListViewModel
     @Bindable var logViewModel: LogViewerViewModel
     @Bindable var alertViewModel: AlertViewModel
+    let onBack: () -> Void
     let onEdit: () -> Void
+
+    private var isDark: Bool { colorScheme == .dark }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Service info header
+            // Service info header with Back button
             serviceHeader
 
             Divider()
@@ -30,33 +35,67 @@ struct ServiceDetailView: View {
     // MARK: - Service header
 
     private var serviceHeader: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.space4) {
-            HStack {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 10, height: 10)
+        VStack(alignment: .leading, spacing: LayoutTokens.space6) {
+            HStack(spacing: LayoutTokens.space4) {
+                Button(action: onBack) {
+                    HStack(spacing: 2) {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .font(.appCaption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(ColorTokens.accent)
+
+                Spacer()
+
+                Button {
+                    NSWorkspace.shared.activateFileViewerSelecting([service.plistURL])
+                } label: {
+                    Image(systemName: "folder")
+                        .font(.appCaption)
+                }
+                .buttonStyle(.plain)
+                .help("Reveal plist in Finder")
+
+                if service.scope.isUserWritable {
+                    Button("Edit Plist") { onEdit() }
+                        .font(.appCaption)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                } else {
+                    Text("Read-Only")
+                        .font(.system(size: 9, weight: .semibold))
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(ColorTokens.controlFill(isDark: isDark)))
+                        .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
+                        .help("Global services are system-protected.")
+                }
+            }
+
+            // Title & Status
+            HStack(spacing: LayoutTokens.space6) {
+                StatusDot(status: service.runtimeStatus, size: 10)
 
                 Text(service.label)
                     .font(.appSubhead)
                     .fontWeight(.semibold)
                     .lineLimit(1)
-
-                Spacer()
-
-                Button("Edit") { onEdit() }
-                    .font(.appCaption)
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                    .truncationMode(.middle)
+                    .foregroundStyle(ColorTokens.primaryLabel(isDark: isDark))
             }
 
+            // Info Badges Row
             HStack(spacing: LayoutTokens.space8) {
                 infoBadge("Scope", service.scope.rawValue)
-                infoBadge("Kind", service.kind.rawValue)
                 infoBadge("Status", service.runtimeStatus.rawValue)
                 if let pid = service.pid {
                     infoBadge("PID", "\(pid)")
                 }
                 infoBadge("Enabled", service.enabled ? "Yes" : "No")
+                infoBadge("RunAtLoad", service.runAtLoad ? "Yes" : "No")
+                infoBadge("KeepAlive", service.keepAlive ? "Yes" : "No")
             }
         }
         .menuRowPadding()
@@ -110,13 +149,14 @@ struct ServiceDetailView: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
 
-            if service.scope == .userAgents {
+            if service.scope.isUserWritable {
                 ConfirmButton(
                     title: "Delete",
-                    message: "Permanently delete \(service.label)?",
+                    message: "Permanently delete plist for \(service.label)?",
                     destructive: true
                 ) {
                     viewModel.runAction(LaunchctlService.deleteUserAgent, label: "Deleting")
+                    onBack()
                 }
             }
 
@@ -127,22 +167,16 @@ struct ServiceDetailView: View {
 
     // MARK: - Helpers
 
-    private var statusColor: Color {
-        switch service.runtimeStatus {
-        case .running: return .green
-        case .loaded: return .orange
-        case .stopped: return .secondary
-        }
-    }
-
     private func infoBadge(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(label)
                 .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
             Text(value)
                 .font(.appCaption)
+                .fontWeight(.medium)
                 .lineLimit(1)
+                .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
         }
     }
 }

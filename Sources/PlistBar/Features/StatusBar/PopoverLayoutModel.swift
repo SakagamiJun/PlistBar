@@ -11,7 +11,7 @@ final class PopoverLayoutModel: ObservableObject {
 
     init(
         maxPanelHeight: CGFloat = 640,
-        preferredPanelHeight: CGFloat = 320,
+        preferredPanelHeight: CGFloat = 460,
         minPanelHeight: CGFloat = 280
     ) {
         self.minPanelHeight = minPanelHeight

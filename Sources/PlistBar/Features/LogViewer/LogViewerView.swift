@@ -1,25 +1,35 @@
+import AppKit
 import SwiftUI
 
 struct LogViewerView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Bindable var viewModel: LogViewerViewModel
     let service: LaunchService?
 
+    private var isDark: Bool { colorScheme == .dark }
+
     var body: some View {
         VStack(spacing: 0) {
-            // Tab bar
+            // Tab bar with action tools
             tabBar
 
             Divider()
 
-            // Search bar
+            // Search filter bar
             searchBar
 
             Divider()
 
             // Log content
             if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: LayoutTokens.space6) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Loading log window (64KB tail)...")
+                        .font(.appCaption)
+                        .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if viewModel.filteredLines.isEmpty {
                 emptyState
             } else {
@@ -49,8 +59,17 @@ struct LogViewerView: View {
                         .background(
                             RoundedRectangle(cornerRadius: LayoutTokens.cornerRadius - 2, style: .continuous)
                                 .fill(viewModel.selectedTab == tab
-                                      ? Color.accentColor.opacity(LayoutTokens.Opacity.tint)
+                                      ? ColorTokens.accent.opacity(LayoutTokens.Opacity.tint)
                                       : Color.clear)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: LayoutTokens.cornerRadius - 2, style: .continuous)
+                                .strokeBorder(
+                                    viewModel.selectedTab == tab
+                                    ? ColorTokens.accent.opacity(0.4)
+                                    : Color.clear,
+                                    lineWidth: LayoutTokens.stroke
+                                )
                         )
                 }
                 .buttonStyle(.plain)
@@ -58,6 +77,18 @@ struct LogViewerView: View {
 
             Spacer()
 
+            // Copy logs button
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(viewModel.currentLogText, forType: .string)
+            } label: {
+                Image(systemName: "doc.on.doc")
+                    .font(.appCaption)
+            }
+            .buttonStyle(.plain)
+            .help("Copy current log to clipboard")
+
+            // Refresh logs button
             Button {
                 if let service {
                     viewModel.loadLogs(for: service)
@@ -67,7 +98,7 @@ struct LogViewerView: View {
                     .font(.appCaption)
             }
             .buttonStyle(.plain)
-            .help("Refresh logs")
+            .help("Reload log window")
         }
         .menuRowPadding(vertical: LayoutTokens.space4)
     }
@@ -77,10 +108,10 @@ struct LogViewerView: View {
     private var searchBar: some View {
         HStack(spacing: LayoutTokens.space4) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                 .font(.appCaption)
 
-            TextField("Filter logs...", text: $viewModel.searchText)
+            TextField("Filter log lines...", text: $viewModel.searchText)
                 .textFieldStyle(.plain)
                 .font(.appBody)
 
@@ -89,7 +120,7 @@ struct LogViewerView: View {
                     viewModel.searchText = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
                         .font(.appCaption)
                 }
                 .buttonStyle(.plain)
@@ -102,16 +133,29 @@ struct LogViewerView: View {
 
     private var logContent: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 1) {
                 ForEach(Array(viewModel.filteredLines.enumerated()), id: \.offset) { _, line in
                     Text(line)
                         .font(.app(size: LayoutTokens.FontSize.caption))
+                        .foregroundStyle(logLineColor(line))
                         .textSelection(.enabled)
                         .lineLimit(nil)
-                        .padding(.horizontal, LayoutTokens.space4)
-                        .padding(.vertical, 1)
+                        .padding(.horizontal, LayoutTokens.space6)
+                        .padding(.vertical, 0.5)
                 }
             }
+            .padding(.vertical, LayoutTokens.space4)
+        }
+    }
+
+    private func logLineColor(_ line: String) -> Color {
+        let lower = line.lowercased()
+        if lower.contains("error") || lower.contains("fatal") || lower.contains("crash") {
+            return ColorTokens.critical
+        } else if lower.contains("warn") {
+            return ColorTokens.warning
+        } else {
+            return ColorTokens.primaryLabel(isDark: isDark)
         }
     }
 
@@ -121,11 +165,12 @@ struct LogViewerView: View {
         VStack(spacing: LayoutTokens.space4) {
             Image(systemName: "doc.text")
                 .font(.appTitle)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(ColorTokens.tertiaryLabel(isDark: isDark))
             Text("No log output")
                 .font(.appBody)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ColorTokens.secondaryLabel(isDark: isDark))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, LayoutTokens.space8)
     }
 }

@@ -27,7 +27,7 @@ final class StatusItemController: NSObject {
                 x: 0,
                 y: 0,
                 width: LayoutTokens.panelWidth,
-                height: 320),
+                height: 460),
             styleMask: [.borderless],
             backing: .buffered,
             defer: true)
@@ -122,7 +122,7 @@ final class StatusItemController: NSObject {
     private func ensurePopoverContent() {
         if self.popoverHostingController == nil {
             let rootView = AnyView(
-                ServiceListView(viewModel: self.viewModel)
+                ServiceListView(viewModel: self.viewModel, alertViewModel: self.alertViewModel)
                     .frame(width: LayoutTokens.panelWidth)
                     .background(
                         AppMaterialSurface.regularPanel()
